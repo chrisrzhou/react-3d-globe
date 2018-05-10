@@ -90,6 +90,7 @@ class Globe {
     this.frameId = null;
   }
 
+  /*
   addMarkers(markers) {
     // the geometry that will contain all our cubes
     const geom = new THREE.Geometry();
@@ -112,7 +113,7 @@ class Globe {
     const total = new THREE.Mesh(geom, new THREE.MeshFaceMaterial());
     this.scene.add(total);
   }
-
+  */
   render() {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
