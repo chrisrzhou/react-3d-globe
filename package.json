@@ -46,6 +46,7 @@
     "eslint-plugin-react": "^7.5.1",
     "eslint-plugin-relay": "^0.0.21",
     "prettier": "1.12.1",
+    "rebass": "^1.0.7",
     "rimraf": "^2.6.2"
   }
 }
