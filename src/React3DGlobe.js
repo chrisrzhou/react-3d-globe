@@ -14,12 +14,24 @@ export default class React3DGlobe extends React.Component {
   componentDidMount() {
     const {radius, textureURL} = this.props;
     this.globe = new Globe(radius, textureURL);
+    this.globe.addMarkers([
+      {
+        lat: 37.7541438,
+        long: -122.4830205,
+        value: 10,
+      },
+      {
+        lat: 40.7062599,
+        long: -74.2115742,
+        value: 10,
+      },
+    ]);
+    this.globe.render();
     this.mount.appendChild(this.globe.renderer.domElement);
-    this._start();
   }
 
   componentWillUnmount() {
-    this._stop();
+    this.globe.stop();
     this.mount.removeChild(this.globe.renderer.domElement);
   }
 
@@ -32,20 +44,4 @@ export default class React3DGlobe extends React.Component {
       />
     );
   }
-
-  _start = () => {
-    if (!this.frameId) {
-      this.frameId = requestAnimationFrame(this._update);
-    }
-  };
-
-  _stop = () => {
-    cancelAnimationFrame(this.frameId);
-  };
-
-  _update = () => {
-    this.globe.controls.update();
-    this.globe.renderer.render(this.globe.scene, this.globe.camera);
-    this.frameId = window.requestAnimationFrame(this._update);
-  };
 }
