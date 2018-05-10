@@ -1,0 +1,49 @@
+{
+  "name": "react-3d-globe",
+  "version": "0.1.0",
+  "description": "React ThreeJS Globe",
+  "repository": "https://github.com/chrisrzhou/react-3d-globe",
+  "homepage": "https://chrisrzhou.github.io/react-3d-globe",
+  "author": "Chris Zhou <christoper.r.zhou@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rimraf build/*",
+    "build": "yarn clean && babel src --out-dir build",
+    "lint": "eslint --fix src stories",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "deploy-storybook": "storybook-to-ghpages"
+  },
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-actions": "^3.4.3",
+    "@storybook/addon-console": "^1.0.0",
+    "@storybook/addon-links": "^3.4.3",
+    "@storybook/addons": "^3.4.3",
+    "@storybook/react": "^3.4.3",
+    "@storybook/storybook-deployer": "^2.3.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.0.3",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-flow": "^6.23.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-runtime": "^6.26.0",
+    "eslint": "^4.13.1",
+    "eslint-config-fbjs": "^2.0.1",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-plugin-babel": "^5.0.0",
+    "eslint-plugin-flowtype": "^2.40.1",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-prettier": "^2.4.0",
+    "eslint-plugin-react": "^7.5.1",
+    "eslint-plugin-relay": "^0.0.21",
+    "prettier": "1.12.1",
+    "rimraf": "^2.6.2"
+  }
+}
