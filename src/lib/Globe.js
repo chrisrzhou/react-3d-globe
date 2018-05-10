@@ -12,10 +12,10 @@ import {
 } from './options';
 
 class Globe {
-  constructor(radius, textureURL) {
+  constructor(radius, textureUrl) {
     this.radius = radius || 600;
-    this.textureURL =
-      textureURL ||
+    this.textureUrl =
+      textureUrl ||
       'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg';
 
     // create point light
@@ -56,7 +56,7 @@ class Globe {
     // create globe and texture
     const globe = new THREE.Group();
     const loader = new THREE.TextureLoader();
-    loader.load(textureURL, texture => {
+    loader.load(textureUrl, texture => {
       const sphere = new THREE.SphereGeometry(
         radius,
         globeOptions.segments,

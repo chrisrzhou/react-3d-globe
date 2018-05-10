@@ -1,4 +1,7 @@
 import React from 'react';
+import * as THREE from 'three';
+import OrbitControls from 'three-orbitcontrols';
+
 import Globe from './lib/Globe';
 
 export default class React3DGlobe extends React.Component {
@@ -9,10 +12,19 @@ export default class React3DGlobe extends React.Component {
   };
 
   componentDidMount() {
-    const {radius, textureURL} = this.props;
-    this.globe = new Globe(radius, textureURL);
-    this.globe.render();
+    const {radius, textureUrl} = this.props;
+    this.globe = new Globe(radius, textureUrl);
     this.mount.appendChild(this.globe.renderer.domElement);
+    this.globe.render();
+  }
+
+  componentDidUpdate() {
+    const {radius, textureUrl} = this.props;
+    this.globe.stop();
+    this.mount.removeChild(this.globe.renderer.domElement);
+    this.globe = new Globe(radius, textureUrl);
+    this.mount.appendChild(this.globe.renderer.domElement);
+    this.globe.render();
   }
 
   componentWillUnmount() {
