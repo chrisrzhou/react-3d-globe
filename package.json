@@ -16,7 +16,9 @@
   },
   "dependencies": {
     "react": "^16.2.0",
-    "react-dom": "^16.2.0"
+    "react-dom": "^16.2.0",
+    "three": "^0.92.0",
+    "three-orbitcontrols": "^2.1.2"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^3.4.3",
