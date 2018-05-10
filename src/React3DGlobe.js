@@ -7,20 +7,22 @@ import Globe from './lib/Globe';
 export default class React3DGlobe extends React.Component {
   static defaultProps = {
     radius: 600,
-    textureURL:
+    textureUrl:
       'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg',
   };
 
   componentDidMount() {
-    const {radius, textureURL} = this.props;
-    this.globe = new Globe(radius, textureURL);
-    this.mount.appendChild(this.globe.renderer.domElement);
     this._start();
   }
 
   componentWillUnmount() {
     this._stop();
     this.mount.removeChild(this.globe.renderer.domElement);
+  }
+
+  componentDidUpdate() {
+    this.mount.removeChild(this.globe.renderer.domElement);
+    this._start();
   }
 
   render() {
@@ -34,9 +36,12 @@ export default class React3DGlobe extends React.Component {
   }
 
   _start = () => {
+    const {radius, textureUrl} = this.props;
     if (!this.frameId) {
       this.frameId = requestAnimationFrame(this._update);
     }
+    this.globe = new Globe(radius, textureUrl);
+    this.mount.appendChild(this.globe.renderer.domElement);
   };
 
   _stop = () => {
