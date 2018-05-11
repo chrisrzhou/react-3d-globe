@@ -8,7 +8,7 @@ export default {
     viewAngle: 45,
   },
   orbitControls: {
-    autoRotate: false,
+    autoRotate: true,
     autoRotateSpeed: 0.05,
     rotateSpeed: 0.05,
     enableDamping: true,
