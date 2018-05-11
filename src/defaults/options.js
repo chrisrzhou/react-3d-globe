@@ -8,7 +8,7 @@ export default {
   },
 
   orbitControls: {
-    autoRotate: false,
+    autoRotate: true,
     autoRotateSpeed: 0.05,
     rotateSpeed: 0.05,
     enableDamping: true,
@@ -16,8 +16,8 @@ export default {
     enablePan: false,
     enableZoom: true,
     zoomSpeed: 1,
-    minPolarAngle: Math.PI * 4 / 16,
-    maxPolarAngle: Math.PI * 12 / 16,
+    minPolarAngle: Math.PI * 3 / 16,
+    maxPolarAngle: Math.PI * 10 / 16,
   },
   globe: {
     segments: 50,

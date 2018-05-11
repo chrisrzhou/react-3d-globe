@@ -38,7 +38,7 @@ export default class React3DGlobe extends React.Component {
   }
 
   onMarkerClick = marker => {
-    this.globe.focus(marker.lat, marker.long);
+    console.log(marker);
   };
 
   renderGlobe() {

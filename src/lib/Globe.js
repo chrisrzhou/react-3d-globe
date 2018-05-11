@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import OrbitControls from 'three-orbitcontrols';
-
 import Marker from './Marker';
 import {latLongToVector} from './projections';
+const TWEEN = require('@tweenjs/tween.js');
+console.log(TWEEN);
 
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
@@ -21,8 +22,7 @@ class Globe {
     this.height = window.innerHeight;
     this.onMarkerClick = onMarkerClick;
     this.markerMap = {};
-    this.isFocused = false;
-
+    this.cameraPosBeforeFocus = {};
     this.setupScene();
   }
 
@@ -50,29 +50,6 @@ class Globe {
     this.scene.add(this.globe);
   }
 
-  onClick() {
-    // event.preventDefault();
-    // const canvas = this.renderer.domElement;
-    // const rect = canvas.getBoundingClientRect();
-    // this.mouse.x =
-    //   (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
-    // this.mouse.y =
-    //   -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
-    // this.raycaster.setFromCamera(this.mouse, this.camera);
-    // const intersects = this.raycaster.intersectObjects(this.markers.children);
-    // if (intersects.length > 0) {
-    //   const marker = this.markerMap[intersects[0].object.uuid];
-    //   const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
-    //   intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
-    //   this.isFocused = true;
-    //   this.camera.position.x = position.x;
-    //   this.camera.position.y = position.y;
-    //   this.camera.position.z = position.z;
-    //   this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-    //   this.onMarkerClick(this.markerMap[intersects[0].object.uuid]);
-    // }
-  }
-
   addMarkers(markers) {
     const cubeMat = new THREE.MeshLambertMaterial({
       color: 0x000000,
@@ -93,14 +70,72 @@ class Globe {
     this.scene.add(this.markers);
   }
 
-  focus(lat, long) {}
+  onClick() {
+    event.preventDefault();
+    const canvas = this.renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    this.mouse.x =
+      (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
+    this.mouse.y =
+      -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.markers.children);
+    if (intersects.length > 0) {
+      this.cameraPosBeforeFocus = {
+        x: this.camera.position.x,
+        y: this.camera.position.y,
+        z: this.camera.position.z,
+      };
+      const to = {
+        x: intersects[0].object.position.x * 5,
+        y: intersects[0].object.position.y * 5,
+        z: intersects[0].object.position.z * 5,
+      };
+      this.focus(this.cameraPosBeforeFocus, to);
+      const marker = this.markerMap[intersects[0].object.uuid];
+      this.onMarkerClick(marker);
+    }
+  }
+
+  focus(from, to) {
+    this.controls.autoRotate = false;
+    const camera = this.camera;
+    const tween = new TWEEN.Tween(from)
+      .to(to, 600)
+      .easing(TWEEN.Easing.Linear.None)
+      .onUpdate(function() {
+        camera.position.set(this._object.x, this._object.y, this._object.z);
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      })
+      .onComplete(function() {
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      })
+      .start();
+  }
+
+  unFocus() {
+    this.controls.autoRotate = true;
+    const camera = this.camera;
+    const cameraPosition = {
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+    };
+    new TWEEN.Tween(cameraPosition)
+      .to(this.cameraPosBeforeFocus, 600)
+      .easing(TWEEN.Easing.Linear.None)
+      .onUpdate(function() {
+        camera.position.set(this._object.x, this._object.y, this._object.z);
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      })
+      .onComplete(function() {
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      })
+      .start();
+  }
 
   render() {
-    // if (!this.isFocused) {
-    //
-    //   this.camera.position.x -= Math.sin(Math.PI * 2 / 180) * this.radius;
-    //   this.camera.position.z -= this.radius - Math.cos(Math.PI * 2 / 180) * this.radius;
-    // }
+    TWEEN.update();
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render.bind(this));
@@ -114,6 +149,7 @@ class Globe {
 
   _createRenderer() {
     const renderer = new THREE.WebGLRenderer(this.options.renderer);
+    renderer.domElement.addEventListener('click', this.onClick.bind(this));
     renderer.setSize(this.width, this.height);
     return renderer;
   }

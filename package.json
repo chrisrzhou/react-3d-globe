@@ -15,10 +15,12 @@
     "deploy-storybook": "storybook-to-ghpages"
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^17.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "three": "^0.92.0",
-    "three-orbitcontrols": "^2.1.2"
+    "three-orbitcontrols": "^2.1.2",
+    "tween.js": "^16.6.0"
   },
   "devDependencies": {
     "@storybook/addon-actions": "^3.4.3",
