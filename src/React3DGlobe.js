@@ -5,6 +5,9 @@ import OrbitControls from 'three-orbitcontrols';
 import Globe from './lib/Globe';
 import * as options from './lib/options';
 
+import globeTexture from './textures/globe.jpg';
+import backgroundTexture from './textures/background.jpg';
+
 export default class React3DGlobe extends React.Component {
   static defaultProps = {
     radius: 600,
@@ -23,19 +26,19 @@ export default class React3DGlobe extends React.Component {
       },
     ],
     options,
-    textureUrl:
-      'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg',
+    globeTexture,
+    backgroundTexture,
   };
 
   componentDidMount() {
-    const {radius, markers, textureUrl, options} = this.props;
-    this.renderGlobe(radius, markers, textureUrl, options);
+    const {radius, markers, globeTexture, backgroundTexture, options} = this.props;
+    this.renderGlobe(radius, markers, globeTexture, backgroundTexture, options);
   }
 
   componentDidUpdate() {
     this.cleanup();
-    const {radius, textureUrl, markers, options} = this.props;
-    this.renderGlobe(radius, markers, textureUrl, options);
+    const {radius, markers, globeTexture, backgroundTexture, options} = this.props;
+    this.renderGlobe(radius, markers, globeTexture, backgroundTexture, options);
   }
 
   onMarkerClick(marker) {
@@ -43,9 +46,14 @@ export default class React3DGlobe extends React.Component {
     this.globe.focus(marker.lat, marker.long);
   }
 
-  renderGlobe(radius, markers, textureUrl, options) {
-    options.onMarkerClick = this.onMarkerClick.bind(this);
-    this.globe = new Globe(radius, textureUrl, options);
+  renderGlobe(radius, markers, globeTexture, backgroundTexture, options) {
+    this.globe = new Globe(
+      radius,
+      this.onMarkerClick.bind(this),
+      globeTexture,
+      backgroundTexture,
+      options,
+    );
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);
     this.globe.render();
