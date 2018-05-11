@@ -3,17 +3,17 @@ export const cameraOptions = {
   near: 1,
   positionX: 0,
   positionY: 0,
-  radiusScale: 3,
+  radiusScale: 4,
 };
 
 export const controlOptions = {
-  autoRotate: true,
+  autoRotate: false,
   autoRotateSpeed: 0.05,
   rotateSpeed: 0.05,
   enableDamping: true,
   dampingFactor: 0.1,
   enablePan: false,
-  enableZoom: false,
+  enableZoom: true,
   zoomSpeed: 1,
   minPolarAngle: Math.PI * 7 / 16,
   maxPolarAngle: Math.PI * 9 / 16,

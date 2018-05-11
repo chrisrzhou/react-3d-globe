@@ -13,6 +13,7 @@ class Globe {
       globeOptions,
       rendererOptions,
       sceneOptions,
+      onMarkerClick,
     } = options;
 
     this.radius = radius || 600;
@@ -93,6 +94,9 @@ class Globe {
     this.markers = new THREE.Group();
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
+    this.onMarkerClick = onMarkerClick;
+    this.markerMap = {};
+    this.isFocused = false;
   }
 
   onClick() {
@@ -106,7 +110,15 @@ class Globe {
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(this.markers.children);
     if (intersects.length > 0) {
+      const marker = this.markerMap[intersects[0].object.uuid];
+      const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
       intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
+      this.isFocused = true;
+      this.camera.position.x = position.x;
+      this.camera.position.y = position.y;
+      this.camera.position.z = position.z;
+      this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+      this.onMarkerClick(this.markerMap[intersects[0].object.uuid]);
     }
   }
 
@@ -117,19 +129,27 @@ class Globe {
       emissive: 0xffffff,
     });
     markers.forEach(marker => {
-      const position = latLongToVector(marker.lat, marker.long, 600, 2);
+      const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
       let cube = new THREE.Mesh(
         new THREE.CubeGeometry(50, 50, 1 + marker.value / 8, 1, 1, 1, cubeMat),
       );
       cube.position.set(position.x, position.y, position.z);
       cube.lookAt(new THREE.Vector3(0, 0, 0));
       this.markers.add(cube);
+      this.markerMap[cube.uuid] = marker;
     });
-
     this.scene.add(this.markers);
   }
 
+  focus(lat, long) {
+  }
+
   render() {
+    if (!this.isFocused) {
+      
+      this.camera.position.x -= Math.sin(Math.PI * 2 / 180) * this.radius;
+      this.camera.position.z -= this.radius - Math.cos(Math.PI * 2 / 180) * this.radius;
+    }
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render.bind(this));

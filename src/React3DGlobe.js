@@ -10,9 +10,16 @@ export default class React3DGlobe extends React.Component {
     radius: 600,
     markers: [
       {
+        id: 1,
         lat: 37.7576948,
         long: -122.4726193,
         value: 1000,
+      },
+      {
+        id: 2,
+        lat: 40.6971494,
+        long: -74.2598621,
+        value: 2000,
       },
     ],
     options,
@@ -21,17 +28,23 @@ export default class React3DGlobe extends React.Component {
   };
 
   componentDidMount() {
-    const {radius, markers, textureUrl} = this.props;
-    this.renderGlobe(radius, markers, textureUrl);
+    const {radius, markers, textureUrl, options} = this.props;
+    this.renderGlobe(radius, markers, textureUrl, options);
   }
 
   componentDidUpdate() {
     this.cleanup();
-    const {radius, textureUrl, markers} = this.props;
-    this.renderGlobe(radius, markers, textureUrl);
+    const {radius, textureUrl, markers, options} = this.props;
+    this.renderGlobe(radius, markers, textureUrl, options);
   }
 
-  renderGlobe(radius, markers, textureUrl) {
+  onMarkerClick(marker) {
+    console.log(marker);
+    this.globe.focus(marker.lat, marker.long);
+  }
+
+  renderGlobe(radius, markers, textureUrl, options) {
+    options.onMarkerClick = this.onMarkerClick.bind(this);
     this.globe = new Globe(radius, textureUrl, options);
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);
