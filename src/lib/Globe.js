@@ -78,7 +78,9 @@ class Globe {
 
     // create renderer
     const renderer = new THREE.WebGLRenderer(rendererOptions);
+    renderer.domElement.addEventListener('click', this.onClick.bind(this));
     renderer.setSize(radius, radius);
+
     // bind class variables
     this.renderer = renderer;
     this.camera = camera;
@@ -88,12 +90,26 @@ class Globe {
     this.mouseX = window.innerWidth / 2;
     this.mouseY = window.innerHeight / 2;
     this.frameId = null;
+
+    this.markers = new THREE.Group();
+    this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
   }
 
-  /*
+  onClick() {
+    event.preventDefault();
+    const canvas = this.renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    this.mouse.x = (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
+    this.mouse.y = -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    const intersects = this.raycaster.intersectObjects(this.markers.children);
+    if (intersects.length > 0) {
+      intersects[0].object.material.color.setHex(Math.random() * 0xffffff);
+    }
+  }
+
   addMarkers(markers) {
-    // the geometry that will contain all our cubes
-    const geom = new THREE.Geometry();
     const cubeMat = new THREE.MeshLambertMaterial({
       color: 0x000000,
       opacity: 0.6,
@@ -102,18 +118,16 @@ class Globe {
     markers.forEach(marker => {
       const position = latLongToVector(marker.lat, marker.long, 600, 2);
       let cube = new THREE.Mesh(
-        new THREE.CubeGeometry(5, 5, 1 + marker.value / 8, 1, 1, 1, cubeMat),
+        new THREE.CubeGeometry(50, 50, 1 + marker.value / 8, 1, 1, 1, cubeMat),
       );
-      cube.position.set(position);
+      cube.position.set(position.x, position.y, position.z);
       cube.lookAt(new THREE.Vector3(0, 0, 0));
-      THREE.GeometryUtils.merge(geom, cube);
+      this.markers.add(cube);
     });
 
-    // create a new mesh, containing all the other meshes.
-    const total = new THREE.Mesh(geom, new THREE.MeshFaceMaterial());
-    this.scene.add(total);
+    this.scene.add(this.markers);
   }
-  */
+
   render() {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
