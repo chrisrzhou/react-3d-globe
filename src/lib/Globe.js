@@ -1,30 +1,27 @@
 import * as THREE from 'three';
 import OrbitControls from 'three-orbitcontrols';
-import {latLongToVector} from './projections';
+
 import Marker from './Marker';
-import {
-  cameraOptions,
-  controlsOptions,
-  globeOptions,
-  pointLightOptions,
-  rendererOptions,
-  sceneOptions,
-} from './options';
+import {latLongToVector} from './projections';
 
 class Globe {
-  constructor(radius, textureUrl) {
+  constructor(radius, textureUrl, options) {
+    // unpack options
+    const {
+      cameraOptions,
+      controlOptions,
+      globeOptions,
+      rendererOptions,
+      sceneOptions,
+    } = options;
+
     this.radius = radius || 600;
     this.textureUrl =
       textureUrl ||
       'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg';
 
-    // create point light
-    const pointLight = new THREE.PointLight(pointLightOptions.color);
-    pointLight.position.set(
-      pointLightOptions.positionX,
-      pointLightOptions.positionY,
-      pointLightOptions.positionZ,
-    );
+    // create light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
 
     // create camera
     const cameraDistance = radius * cameraOptions.radiusScale;
@@ -39,19 +36,21 @@ class Globe {
       cameraOptions.positionY,
       cameraDistance,
     );
-    camera.add(pointLight);
+    camera.add(ambientLight);
 
     // create controls
     const controls = new OrbitControls(camera);
-    controls.enablePan = controlsOptions.enablePan;
-    controls.enableZoom = controlsOptions.enableZoom;
-    controls.rotateSpeed = controlsOptions.rotateSpeed;
-    controls.zoomSpeed = controlsOptions.zoomSpeed;
-    controls.enableDamping = controlsOptions.enableDamping;
-    controls.dampingFactor = controlsOptions.dampingFactor;
-    controls.autoRotate = controlsOptions.autoRotate;
-    controls.autoRotateSpeed = controlsOptions.autoRotateSpeed;
+    controls.enablePan = controlOptions.enablePan;
+    controls.enableZoom = controlOptions.enableZoom;
+    controls.zoomSpeed = controlOptions.zoomSpeed;
+    controls.rotateSpeed = controlOptions.rotateSpeed;
+    controls.enableDamping = controlOptions.enableDamping;
+    controls.dampingFactor = controlOptions.dampingFactor;
+    controls.autoRotate = controlOptions.autoRotate;
+    controls.autoRotateSpeed = controlOptions.autoRotateSpeed;
     controls.maxDistance = cameraDistance;
+    controls.minPolarAngle = controlOptions.minPolarAngle;
+    controls.maxPolarAngle = controlOptions.maxPolarAngle;
 
     // create globe and texture
     const globe = new THREE.Group();
@@ -65,8 +64,8 @@ class Globe {
       const material = new THREE.MeshPhongMaterial({
         map: texture,
       });
-      const mesh = new THREE.Mesh(sphere, material);
-      globe.add(mesh);
+      const sphereMesh = new THREE.Mesh(sphere, material);
+      globe.add(sphereMesh);
     });
     globe.position.z = globeOptions.positionZ;
 
@@ -100,8 +99,10 @@ class Globe {
     event.preventDefault();
     const canvas = this.renderer.domElement;
     const rect = canvas.getBoundingClientRect();
-    this.mouse.x = (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
-    this.mouse.y = -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
+    this.mouse.x =
+      (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
+    this.mouse.y =
+      -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(this.markers.children);
     if (intersects.length > 0) {

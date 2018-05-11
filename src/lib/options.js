@@ -6,28 +6,23 @@ export const cameraOptions = {
   radiusScale: 3,
 };
 
-export const controlsOptions = {
+export const controlOptions = {
   autoRotate: true,
-  autoRotateSpeed: 0.2,
-  enablePan: false,
-  rotateSpeed: 0.4,
+  autoRotateSpeed: 0.05,
+  rotateSpeed: 0.05,
   enableDamping: true,
-  enableZoom: true,
-  dampingFactor: 0.8,
+  dampingFactor: 0.1,
+  enablePan: false,
+  enableZoom: false,
   zoomSpeed: 1,
+  minPolarAngle: Math.PI * 7 / 16,
+  maxPolarAngle: Math.PI * 9 / 16,
 };
 
 export const globeOptions = {
   segments: 50,
   rings: 50,
   rotationSpeed: 0.001,
-  positionZ: 0,
-};
-
-export const pointLightOptions = {
-  color: 0xffffff,
-  positionX: 0,
-  positionY: 0,
   positionZ: 0,
 };
 
