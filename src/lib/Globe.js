@@ -4,21 +4,15 @@ import OrbitControls from 'three-orbitcontrols';
 import Marker from './Marker';
 import {latLongToVector} from './projections';
 
-const SCREEN_WIDTH = window.innerWidth;
-const SCREEN_HEIGHT = window.innerHeight;
-const VIEW_ANGLE = 45;
-const ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
-const NEAR = 0.1;
-const FAR = 20000;
-
 class Globe {
-  constructor(options, textures, radius, onMarkerClick) {
+  constructor(width, height, options, textures, onMarkerClick) {
     // Bind class variables
     this.options = options;
     this.textures = textures;
-    this.radius = radius;
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.aspect = width / height;
+    this.radius = Math.min(width, height);
+    this.width = width;
+    this.height = height;
     this.onMarkerClick = onMarkerClick;
     this.markerMap = {};
     this.isFocused = false;
@@ -48,6 +42,12 @@ class Globe {
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
+  }
+
+  updateSize(width, height) {
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
   }
 
   onClick() {
@@ -85,7 +85,6 @@ class Globe {
         new THREE.CubeGeometry(50, 50, 1 + marker.value / 8, 1, 1, 1, cubeMat),
       );
       cube.position.set(position.x, position.y, position.z);
-      console.log(position.x, position.y, position.z);
       cube.lookAt(new THREE.Vector3(0, 0, 0));
       this.markers.add(cube);
       this.markerMap[cube.uuid] = marker;
@@ -123,8 +122,21 @@ class Globe {
   }
 
   _createCamera() {
-    const camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-    camera.position.set(0, 0, this.radius * 5);
+    const {
+      far,
+      near,
+      positionX,
+      positionY,
+      radiusScale,
+      viewAngle,
+    } = this.options.camera;
+    const camera = new THREE.PerspectiveCamera(
+      viewAngle,
+      this.aspect,
+      near,
+      far,
+    );
+    camera.position.set(positionX, positionY, this.radius * radiusScale);
     camera.lookAt(this.scene.position);
     return camera;
   }
