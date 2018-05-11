@@ -5,7 +5,7 @@ import Marker from './Marker';
 import {latLongToVector} from './projections';
 
 class Globe {
-  constructor(radius, textureUrl, options) {
+  constructor(radius, globeTexture, backgroundTexture, options) {
     // unpack options
     const {
       cameraOptions,
@@ -14,11 +14,6 @@ class Globe {
       rendererOptions,
       sceneOptions,
     } = options;
-
-    this.radius = radius || 600;
-    this.textureUrl =
-      textureUrl ||
-      'https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57735/land_ocean_ice_cloud_2048.jpg';
 
     // create light
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -53,27 +48,35 @@ class Globe {
     controls.maxPolarAngle = controlOptions.maxPolarAngle;
 
     // create globe and texture
-    const globe = new THREE.Group();
-    const loader = new THREE.TextureLoader();
-    loader.load(textureUrl, texture => {
-      const sphere = new THREE.SphereGeometry(
-        radius,
-        globeOptions.segments,
-        globeOptions.rings,
-      );
-      const material = new THREE.MeshPhongMaterial({
-        map: texture,
-      });
-      const sphereMesh = new THREE.Mesh(sphere, material);
-      globe.add(sphereMesh);
+    const sphereGeometry = new THREE.SphereGeometry(
+      radius,
+      globeOptions.segments,
+      globeOptions.rings,
+    );
+    const sphereMaterial = new THREE.MeshPhongMaterial({
+      map: THREE.ImageUtils.loadTexture(globeTexture),
     });
-    globe.position.z = globeOptions.positionZ;
+    const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
 
     // create scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(sceneOptions.backgroundColor);
     scene.add(globe);
+    scene.add(background);
     scene.add(camera);
+
+    // create the background texture and scene
+    const background = new THREE.Mesh(
+      new THREE.PlaneGeometry(2, 2, 0),
+      new THREE.MeshBasicMaterial({
+        map: THREE.ImageUtils.loadTexture(backgroundTexture),
+      }),
+    );
+    background.material.depthTest = false;
+    background.material.depthWrite = false;
+    const backgroundScene = new THREE.Scene();
+    const backgroundCamera = new THREE.Camera();
+    backgroundScene.add(backgroundCamera);
+    backgroundScene.add(background);
 
     // create renderer
     const renderer = new THREE.WebGLRenderer(rendererOptions);
@@ -89,6 +92,8 @@ class Globe {
     this.mouseX = window.innerWidth / 2;
     this.mouseY = window.innerHeight / 2;
     this.frameId = null;
+    this.backgroundScene = backgroundScene;
+    this.backgroundCamera = backgroundCamera;
 
     this.markers = new THREE.Group();
     this.raycaster = new THREE.Raycaster();
@@ -131,6 +136,9 @@ class Globe {
 
   render() {
     this.controls.update();
+    this.renderer.autoClear = false; // render multiple scenes
+    this.renderer.clear();
+    this.renderer.render(this.backgroundScene, this.backgroundCamera);
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render.bind(this));
   }
