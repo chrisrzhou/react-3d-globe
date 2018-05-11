@@ -2,9 +2,9 @@ import React from 'react';
 import {Button, ButtonOutline, Group, Label} from 'rebass';
 
 import React3DGlobe from './../../src';
-import backgroundDefault from './textures/background-default.jpg';
-import backgroundTree from './textures/background-tree.jpg';
-import backgroundPlanets from './textures/background-planets.jpg';
+import spaceDefault from './textures/space-default.jpg';
+import spaceTree from './textures/space-tree.jpg';
+import spacePlanets from './textures/space-planets.jpg';
 import globeCityLights from './textures/globe-city-lights.jpg';
 import globeColorful from './textures/globe-colorful.jpg';
 import globeDark from './textures/globe-dark.jpg';
@@ -39,17 +39,17 @@ const globeTextures = [
   },
 ];
 
-const backgroundTextures = [
+const spaceTextures = [
   {
-    value: backgroundDefault,
+    value: spaceDefault,
     label: 'default',
   },
   {
-    value: backgroundTree,
+    value: spaceTree,
     label: 'tree',
   },
   {
-    value: backgroundPlanets,
+    value: spacePlanets,
     label: 'planets',
   },
 ];
@@ -57,13 +57,13 @@ const backgroundTextures = [
 const ButtonGroup = ({label, options, selectedValue, onButtonClick}) => (
   <Group mb={4}>
     <Label>{label}</Label>
-    {options.map(option => {
-      const ButtonComponent =
-        option.value === selectedValue ? Button : ButtonOutline;
+    {options.map(({value, label}) => {
+      const ButtonComponent = value === selectedValue ? Button : ButtonOutline;
       return (
         <ButtonComponent
-          children={option.label}
-          onClick={() => onButtonClick(option.value)}
+          key={value}
+          children={label}
+          onClick={() => onButtonClick(value)}
         />
       );
     })}
@@ -73,11 +73,11 @@ const ButtonGroup = ({label, options, selectedValue, onButtonClick}) => (
 export default class TexturesExample extends React.Component {
   state = {
     selectedGlobeTexture: globeTextures[0].value,
-    selectedBackgroundTexture: backgroundTextures[0].value,
+    selectedSpaceTexture: spaceTextures[0].value,
   };
 
   render() {
-    const {selectedBackgroundTexture, selectedGlobeTexture} = this.state;
+    const {selectedSpaceTexture, selectedGlobeTexture} = this.state;
     return (
       <div>
         <ButtonGroup
@@ -90,15 +90,15 @@ export default class TexturesExample extends React.Component {
         />
         <ButtonGroup
           label="Background Texture"
-          options={backgroundTextures}
-          selectedValue={selectedBackgroundTexture}
+          options={spaceTextures}
+          selectedValue={selectedSpaceTexture}
           onButtonClick={value => {
-            this.setState({selectedBackgroundTexture: value});
+            this.setState({selectedSpaceTexture: value});
           }}
         />
         <React3DGlobe
-          backgroundTexture={selectedBackgroundTexture}
           globeTexture={selectedGlobeTexture}
+          spaceTexture={selectedSpaceTexture}
         />
       </div>
     );

@@ -1,13 +1,10 @@
 import React from 'react';
-import * as THREE from 'three';
-import OrbitControls from 'three-orbitcontrols';
 
 import Globe from './lib/Globe';
-import * as options from './lib/options';
+import options from './defaults/options';
+import textures from './defaults/textures';
 
-import globeTexture from './textures/globe.jpg';
-import backgroundTexture from './textures/background.jpg';
-
+console.log(textures.globeGlow);
 export default class React3DGlobe extends React.Component {
   static defaultProps = {
     radius: 600,
@@ -26,34 +23,39 @@ export default class React3DGlobe extends React.Component {
       },
     ],
     options,
-    globeTexture,
-    backgroundTexture,
+    globeTexture: textures.globe,
+    globeGlowTexture: textures.globeGlow,
+    spaceTexture: textures.space,
   };
 
   componentDidMount() {
-    const {radius, markers, globeTexture, backgroundTexture, options} = this.props;
-    this.renderGlobe(radius, markers, globeTexture, backgroundTexture, options);
+    this.renderGlobe();
   }
 
   componentDidUpdate() {
     this.cleanup();
-    const {radius, markers, globeTexture, backgroundTexture, options} = this.props;
-    this.renderGlobe(radius, markers, globeTexture, backgroundTexture, options);
+    this.renderGlobe();
   }
 
-  onMarkerClick(marker) {
-    console.log(marker);
+  onMarkerClick = marker => {
     this.globe.focus(marker.lat, marker.long);
-  }
+  };
 
-  renderGlobe(radius, markers, globeTexture, backgroundTexture, options) {
-    this.globe = new Globe(
-      radius,
-      this.onMarkerClick.bind(this),
-      globeTexture,
-      backgroundTexture,
+  renderGlobe() {
+    const {
       options,
-    );
+      globeTexture,
+      globeGlowTexture,
+      spaceTexture,
+      radius,
+      markers,
+    } = this.props;
+    const textures = {
+      globe: globeTexture,
+      globeGlow: globeGlowTexture,
+      space: spaceTexture,
+    };
+    this.globe = new Globe(options, textures, radius, this.onMarkerClick);
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);
     this.globe.render();
