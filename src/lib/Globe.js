@@ -94,8 +94,6 @@ class Globe {
       this.focus(this.cameraPosBeforeFocus, to);
       const marker = this.markerMap[intersects[0].object.uuid];
       this.onMarkerClick(marker);
-    } else {
-      this.unFocus();
     }
   };
 
