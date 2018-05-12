@@ -43,7 +43,12 @@ class Globe {
 
     // Add to scenes
     this.camera.add(this.light);
-    this.scene.add(this.backlight);
+    this.camera.add(this.backlight);
+    this.backlight.position.set(
+      -this.radius * 6, 
+      this.radius * 6, 
+      0,
+    );
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -162,21 +167,6 @@ class Globe {
   render = () => {
     TWEEN.update();
     this.controls.update();
-    /*
-    const deltaX = this.camera.position.x - this.lastCameraPos.x;
-    const deltaY = this.camera.position.y - this.lastCameraPos.y;
-    const deltaZ = this.camera.position.z - this.lastCameraPos.z;
-    this.backlight.position.set(
-      this.backlight.position.x + deltaX,
-      this.backlight.position.y,
-      this.backlight.position.z + deltaZ,
-    );
-    this.lastCameraPos = {
-      x: this.camera.position.x,
-      y: this.camera.position.y,
-      z: this.camera.position.z,
-    };
-    */
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render);
   };
@@ -258,8 +248,7 @@ class Globe {
   }
 
   _createBacklight() {
-    const light = new THREE.SpotLight(0xf5f5dc, 1, this.radius * 10);
-    light.position.set(-this.radius * 3, this.radius * 3, 0);
+    const light = new THREE.SpotLight(0xff0000, 5, this.radius * 10);
     light.target.position.set(0, 0, 0);
     return light;
   }
