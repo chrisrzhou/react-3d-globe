@@ -32,6 +32,7 @@ class Globe {
     this.scene = this._createScene();
     this.camera = this._createCamera();
     this.light = this._createLight();
+    this.backlight = this._createBacklight();
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
@@ -45,6 +46,7 @@ class Globe {
 
     // Add to scenes
     this.camera.add(this.light);
+    this.scene.add(this.backlight);
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -135,6 +137,16 @@ class Globe {
   }
 
   render() {
+    /*
+    this.backlight.position.x = -this.camera.position.x * 5;
+    this.backlight.position.y = -this.camera.position.y * 5;
+    this.backlight.position.z = -this.camera.position.z * 5;
+    */
+    this.backlight.position.set(
+      -this.camera.position.x - this.radius * 4,
+      -this.camera.position.y,
+      -this.camera.position.z,
+    );
     TWEEN.update();
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
@@ -198,6 +210,12 @@ class Globe {
     return light;
   }
 
+  _createBacklight() {
+    const light = new THREE.SpotLight(0x00ff00, 100, this.radius * 10);
+    light.target.position.set(0, 0, 0);
+    return light;
+  }
+
   _createSpace() {
     const spaceGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
     const spaceMaterials = [];
@@ -220,7 +238,7 @@ class Globe {
       segments,
       rings,
     );
-    const sphereMaterial = new THREE.MeshPhongMaterial({
+    const sphereMaterial = new THREE.MeshLambertMaterial({
       map: THREE.ImageUtils.loadTexture(this.textures.globe),
     });
     const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
