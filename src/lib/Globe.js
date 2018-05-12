@@ -1,28 +1,25 @@
 import * as THREE from 'three';
-import OrbitControls from 'three-orbitcontrols';
-import Marker from './Marker';
-import {latLongToVector} from './projections';
 const TWEEN = require('@tweenjs/tween.js');
-console.log(TWEEN);
+import OrbitControls from 'three-orbitcontrols';
 
-const SCREEN_WIDTH = window.innerWidth;
-const SCREEN_HEIGHT = window.innerHeight;
-const VIEW_ANGLE = 45;
-const ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
-const NEAR = 0.1;
-const FAR = 20000;
+import {latLongToVector} from './projections';
 
 class Globe {
-  constructor(options, textures, radius, onMarkerClick) {
+  constructor(width, height, options, textures, onMarkerClick) {
     // Bind class variables
     this.options = options;
     this.textures = textures;
-    this.radius = radius;
-    this.width = window.innerWidth;
-    this.height = window.innerHeight;
+    this.aspect = width / height;
+    this.radius = Math.min(width, height);
+    this.width = width;
+    this.height = height;
     this.onMarkerClick = onMarkerClick;
     this.markerMap = {};
-    this.cameraPosBeforeFocus = {};
+    this.isFocused = false;
+    this.preFocusX = 0;
+    this.preFocusY = 0;
+    this.preFocusZ = 0;
+    this.lastCameraPos = {};
     this.setupScene();
   }
 
@@ -52,6 +49,13 @@ class Globe {
     this.scene.add(this.globe);
   }
 
+  updateSize(width, height) {
+    this.renderer.setSize(width, height);
+    this.camera.aspect = width / height;
+    this.camera.updateProjectionMatrix();
+    this.renderer.render(this.scene, this.camera);
+  }
+
   addMarkers(markers) {
     const cubeMat = new THREE.MeshLambertMaterial({
       color: 0x000000,
@@ -64,7 +68,6 @@ class Globe {
         new THREE.CubeGeometry(50, 50, 1 + marker.value / 8, 1, 1, 1, cubeMat),
       );
       cube.position.set(position.x, position.y, position.z);
-      console.log(position.x, position.y, position.z);
       cube.lookAt(new THREE.Vector3(0, 0, 0));
       this.markers.add(cube);
       this.markerMap[cube.uuid] = marker;
@@ -72,7 +75,7 @@ class Globe {
     this.scene.add(this.markers);
   }
 
-  onClick() {
+  onClick = () => {
     event.preventDefault();
     const canvas = this.renderer.domElement;
     const rect = canvas.getBoundingClientRect();
@@ -82,27 +85,40 @@ class Globe {
       -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(this.markers.children);
+    const {radiusScale} = this.options.camera;
     if (intersects.length > 0) {
-      this.cameraPosBeforeFocus = {
+      if (!this.isFocused) {
+        this.preFocusX = this.camera.position.x;
+        this.preFocusY = this.camera.position.y;
+        this.preFocusZ = this.camera.position.z;
+      }
+      const to = {
+        x: intersects[0].object.position.x * (radiusScale - 2),
+        y: intersects[0].object.position.y * (radiusScale - 2),
+        z: intersects[0].object.position.z * (radiusScale - 2),
+      };
+      const from = {
         x: this.camera.position.x,
         y: this.camera.position.y,
         z: this.camera.position.z,
       };
-      const to = {
-        x: intersects[0].object.position.x * 5,
-        y: intersects[0].object.position.y * 5,
-        z: intersects[0].object.position.z * 5,
-      };
-      this.focus(this.cameraPosBeforeFocus, to);
+      this.focus(from, to);
       const marker = this.markerMap[intersects[0].object.uuid];
       this.onMarkerClick(marker);
+    } else {
+      if (!this.controls.autoRotate) {
+        this.unFocus();
+      }
     }
-  }
+  };
 
   focus(from, to) {
+    this.isFocused = true;
     this.controls.autoRotate = false;
+    this.controls.minPolarAngle = Math.PI * 3 / 16;
+    this.controls.maxPolarAngle = Math.PI * 10 / 16;
     const camera = this.camera;
-    const tween = new TWEEN.Tween(from)
+    new TWEEN.Tween(from)
       .to(to, 600)
       .easing(TWEEN.Easing.Linear.None)
       .onUpdate(function() {
@@ -116,42 +132,54 @@ class Globe {
   }
 
   unFocus() {
-    this.controls.autoRotate = true;
-    const camera = this.camera;
+    const self = this;
+    self.isFocused = false;
     const cameraPosition = {
-      x: camera.position.x,
-      y: camera.position.y,
-      z: camera.position.z,
+      x: self.camera.position.x,
+      y: self.camera.position.y,
+      z: self.camera.position.z,
     };
     new TWEEN.Tween(cameraPosition)
-      .to(this.cameraPosBeforeFocus, 600)
+      .to({x: self.preFocusX, y: self.preFocusY, z: self.preFocusZ}, 600)
       .easing(TWEEN.Easing.Linear.None)
       .onUpdate(function() {
-        camera.position.set(this._object.x, this._object.y, this._object.z);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        self.camera.position.set(
+          this._object.x,
+          this._object.y,
+          this._object.z,
+        );
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
       })
       .onComplete(function() {
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        self.controls.autoRotate = true;
+        self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;
+        self.controls.maxPolarAngle = self.options.orbitControls.maxPolarAngle;
       })
       .start();
   }
 
-  render() {
-    /*
-    this.backlight.position.x = -this.camera.position.x * 5;
-    this.backlight.position.y = -this.camera.position.y * 5;
-    this.backlight.position.z = -this.camera.position.z * 5;
-    */
-    this.backlight.position.set(
-      -this.camera.position.x - this.radius * 4,
-      -this.camera.position.y,
-      -this.camera.position.z,
-    );
+  render = () => {
     TWEEN.update();
     this.controls.update();
+    /*
+    const deltaX = this.camera.position.x - this.lastCameraPos.x;
+    const deltaY = this.camera.position.y - this.lastCameraPos.y;
+    const deltaZ = this.camera.position.z - this.lastCameraPos.z;
+    this.backlight.position.set(
+      this.backlight.position.x + deltaX,
+      this.backlight.position.y,
+      this.backlight.position.z + deltaZ,
+    );
+    this.lastCameraPos = {
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+    };
+    */
     this.renderer.render(this.scene, this.camera);
-    this.frameId = window.requestAnimationFrame(this.render.bind(this));
-  }
+    this.frameId = window.requestAnimationFrame(this.render);
+  };
 
   stop() {
     if (this.frameId) {
@@ -161,7 +189,7 @@ class Globe {
 
   _createRenderer() {
     const renderer = new THREE.WebGLRenderer(this.options.renderer);
-    renderer.domElement.addEventListener('click', this.onClick.bind(this));
+    renderer.domElement.addEventListener('click', this.onClick);
     renderer.setSize(this.width, this.height);
     return renderer;
   }
@@ -171,8 +199,26 @@ class Globe {
   }
 
   _createCamera() {
-    const camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-    camera.position.set(0, 0, this.radius * 5);
+    const {
+      far,
+      near,
+      positionX,
+      positionY,
+      radiusScale,
+      viewAngle,
+    } = this.options.camera;
+    const camera = new THREE.PerspectiveCamera(
+      viewAngle,
+      this.aspect,
+      near,
+      far,
+    );
+    camera.position.set(positionX, positionY, this.radius * radiusScale);
+    this.lastCameraPos = {
+      x: camera.position.x,
+      y: camera.position.y,
+      z: camera.position.z,
+    };
     camera.lookAt(this.scene.position);
     return camera;
   }
@@ -205,13 +251,15 @@ class Globe {
   }
 
   _createLight() {
-    const light = new THREE.PointLight(0xffffff);
-    light.position.set(0, 0, this.radius * 3);
+    const light = new THREE.SpotLight(0xf5f5dc, 2, this.radius * 10);
+    light.target.position.set(0, 0, 0);
+    // light.position.set(0, 0, this.radius * 3);
     return light;
   }
 
   _createBacklight() {
-    const light = new THREE.SpotLight(0x00ff00, 100, this.radius * 10);
+    const light = new THREE.SpotLight(0xf5f5dc, 1, this.radius * 10);
+    light.position.set(-this.radius * 3, this.radius * 3, 0);
     light.target.position.set(0, 0, 0);
     return light;
   }
