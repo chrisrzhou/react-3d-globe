@@ -19,7 +19,6 @@ class Globe {
     this.preFocusX = 0;
     this.preFocusY = 0;
     this.preFocusZ = 0;
-    this.lastCameraPos = {};
     this.setupScene();
   }
 
@@ -46,8 +45,8 @@ class Globe {
     this.camera.add(this.backlight);
     this.backlight.position.set(
       -this.radius * 6, 
-      this.radius * 6, 
       0,
+      -this.radius * 8,
     );
     this.scene.add(this.camera);
     this.scene.add(this.space);
@@ -62,20 +61,33 @@ class Globe {
   }
 
   addMarkers(markers) {
-    const cubeMat = new THREE.MeshLambertMaterial({
+    // clear before adding
+    this.markers.children.forEach(child => {
+        this.markers.remove(child);
+    });
+    const mat = new THREE.MeshLambertMaterial({
       color: 0x000000,
       opacity: 0.6,
       emissive: 0xffffff,
     });
     markers.forEach(marker => {
-      const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
-      let cube = new THREE.Mesh(
-        new THREE.CubeGeometry(50, 50, 1 + marker.value / 8, 1, 1, 1, cubeMat),
-      );
-      cube.position.set(position.x, position.y, position.z);
-      cube.lookAt(new THREE.Vector3(0, 0, 0));
-      this.markers.add(cube);
-      this.markerMap[cube.uuid] = marker;
+      let mesh = null;
+      if (marker.type === 'bar') {
+          const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
+          mesh = new THREE.Mesh(
+            new THREE.CubeGeometry(5, 5, 1 + marker.value / 8, 1, 1, 1, mat),
+          );
+          mesh.position.set(position.x, position.y, position.z);
+          mesh.lookAt(new THREE.Vector3(0, 0, 0));
+      } else {
+          mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(10, 10, 20, 20),
+            mat,
+          );
+          const position = latLongToVector(marker.lat, marker.long, this.radius, 10);
+          mesh.position.set(position.x, position.y, position.z);
+      }
+      mesh && this.markers.add(mesh) && (this.markerMap[mesh.uuid] = marker);
     });
     this.scene.add(this.markers);
   }
@@ -243,12 +255,11 @@ class Globe {
   _createLight() {
     const light = new THREE.SpotLight(0xf5f5dc, 2, this.radius * 10);
     light.target.position.set(0, 0, 0);
-    // light.position.set(0, 0, this.radius * 3);
     return light;
   }
 
   _createBacklight() {
-    const light = new THREE.SpotLight(0xff0000, 5, this.radius * 10);
+    const light = new THREE.SpotLight(0xf5f5dc, 10, this.radius * 10);
     light.target.position.set(0, 0, 0);
     return light;
   }
