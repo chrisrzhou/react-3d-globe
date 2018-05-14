@@ -17,8 +17,8 @@ export default {
     enableZoom: false,
     enableRotate: true,
     zoomSpeed: 1,
-    minPolarAngle: Math.PI * 4 / 16,
-    maxPolarAngle: Math.PI * 6 / 16,
+    minPolarAngle: Math.PI * 7 / 16,
+    maxPolarAngle: Math.PI * 9 / 16,
   },
   globe: {
     segments: 50,

@@ -7,7 +7,14 @@ import {loadTexture} from './loaders';
 import {latLongToVector} from './projections';
 
 class Globe {
-  constructor(width, height, options, textures, onMarkerClick, onMouseoverMarker) {
+  constructor(
+    width,
+    height,
+    options,
+    textures,
+    onMarkerClick,
+    onMouseoverMarker,
+  ) {
     // Bind class variables
     this.options = options;
     this.textures = textures;
@@ -196,6 +203,10 @@ class Globe {
   focus(to) {
     const self = this;
     self.isFocused = true;
+    self.controls.autoRotate = false;
+    self.controls.enableRotate = false;
+    self.controls.minPolarAngle = Math.PI * 3 / 16;
+    self.controls.maxPolarAngle = Math.PI * 13 / 16;
     const from = {
       x: self.camera.position.x,
       y: self.camera.position.y,
@@ -210,10 +221,6 @@ class Globe {
       })
       .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
-        self.controls.autoRotate = false;
-        self.controls.enableRotate = false;
-        self.controls.minPolarAngle = Math.PI * 3 / 16;
-        self.controls.maxPolarAngle = Math.PI * 10 / 16;
       })
       .start();
   }
@@ -236,7 +243,7 @@ class Globe {
       .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
         self.controls.autoRotate = true;
-        self.controls.enableRotate = false;
+        self.controls.enableRotate = true;
         self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;
         self.controls.maxPolarAngle = self.options.orbitControls.maxPolarAngle;
       })
