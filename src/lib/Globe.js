@@ -296,7 +296,7 @@ class Globe {
   }
 
   _createLight() {
-    const light = new THREE.SpotLight(0xf5f5dc, 1, this.radius * 10);
+    const light = new THREE.SpotLight(0xf5f5dc, 1.5, this.radius * 10);
     light.target.position.set(0, 0, 0);
     return light;
   }
