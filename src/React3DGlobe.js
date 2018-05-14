@@ -30,7 +30,7 @@ export default class React3DGlobe extends React.Component {
     });
   }
 
-  getSnapshotBeforeUpdate(prevProps, prevState) {
+  componentDidUpdate(prevProps, prevState) {
     const {height, width} = this.state;
     if (prevProps !== this.props) {
       this.cleanup();
@@ -101,7 +101,6 @@ export default class React3DGlobe extends React.Component {
 
   onResize = (width, height) => {
     // do not resize if change is small
-    console.log(width, height);
     this.setState(prevState => {
       if (
         (!this.props.width && Math.abs(prevState.width - width) > 10) ||

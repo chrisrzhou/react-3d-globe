@@ -15,8 +15,7 @@ yarn-error.log*
 .DS_Store
 
 # dev
-.storybook
-stories
-.babelrc
 .editorconfig
 .eslintrc
+.storybook
+stories

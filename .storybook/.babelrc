@@ -1,0 +1,4 @@
+// custom storybook babelrc
+{
+  "presets": ["env", "flow", "react", "stage-0"]
+}

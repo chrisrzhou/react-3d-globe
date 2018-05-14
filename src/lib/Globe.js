@@ -1,7 +1,8 @@
 import * as THREE from 'three';
-const TWEEN = require('@tweenjs/tween.js');
+import TWEEN from '@tweenjs/tween.js';
 import OrbitControls from 'three-orbitcontrols';
 
+import {loadTexture} from './loaders';
 import {latLongToVector} from './projections';
 
 class Globe {
@@ -269,7 +270,7 @@ class Globe {
     for (var i = 0; i < 6; i++)
       spaceMaterials.push(
         new THREE.MeshBasicMaterial({
-          map: THREE.ImageUtils.loadTexture(this.textures.space),
+          map: loadTexture(this.textures.space),
           side: THREE.BackSide,
         }),
       );
@@ -286,7 +287,7 @@ class Globe {
       rings,
     );
     const sphereMaterial = new THREE.MeshLambertMaterial({
-      map: THREE.ImageUtils.loadTexture(this.textures.globe),
+      map: loadTexture(this.textures.globe),
     });
     const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
     globe.position.set(0, 0, 0);
