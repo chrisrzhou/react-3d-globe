@@ -1,6 +1,6 @@
 {
   "name": "react-3d-globe",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "React ThreeJS Globe",
   "license": "MIT",
   "homepage": "https://chrisrzhou.github.io/react-3d-globe",
@@ -36,7 +36,7 @@
     "deploy-storybook": "storybook-to-ghpages"
   },
   "dependencies": {
-    "d3": "^5.4.0",
+    "d3": "^5.0.0",
     "es6-tween": "^5.2.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
