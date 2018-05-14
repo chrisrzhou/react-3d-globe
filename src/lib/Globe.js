@@ -62,10 +62,11 @@ class Globe {
     });
     const minVal = d3.min(markers, marker => marker.value || 10);
     const maxVal = d3.max(markers, marker => marker.value || 10);
+    const range = minVal != maxVal ? [50, 500] : [50, 50];
     const barScale = d3
       .scaleLinear()
       .domain([minVal, maxVal])
-      .range([50, 500]);
+      .range(range);
     const pointScale = d3
       .scaleLinear()
       .domain([minVal, maxVal])
@@ -119,33 +120,37 @@ class Globe {
 
   onClick = () => {
     event.preventDefault();
-    const canvas = this.renderer.domElement;
-    const rect = canvas.getBoundingClientRect();
-    this.mouse.x =
-      (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
-    this.mouse.y =
-      -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(this.markers.children);
     const {radiusScale} = this.options.camera;
-    if (intersects.length > 0) {
+    const intersections = this._getIntersections();
+    if (intersections.length > 0) {
+      const obj = intersections[0].object;
       if (!this.isFocused) {
         this.preFocusX = this.camera.position.x;
         this.preFocusY = this.camera.position.y;
         this.preFocusZ = this.camera.position.z;
       }
       const to = {
-        x: intersects[0].object.position.x * (radiusScale - 2),
-        y: intersects[0].object.position.y * (radiusScale - 2),
-        z: intersects[0].object.position.z * (radiusScale - 2),
+        x: obj.position.x * (radiusScale - 2),
+        y: obj.position.y * (radiusScale - 2),
+        z: obj.position.z * (radiusScale - 2),
       };
       this.focus(to);
-      const marker = this.markerMap[intersects[0].object.uuid];
+      const marker = this.markerMap[obj.uuid];
       this.onMarkerClick(marker);
     } else {
       if (!this.controls.autoRotate) {
         this.unFocus();
       }
+    }
+  };
+
+  onMousemove = () => {
+    event.preventDefault();
+    const intersections = this._getIntersections();
+    if (intersections.length > 0) {
+      console.log('mouse over');
+    } else {
+      console.log('mouse out');
     }
   };
 
@@ -214,9 +219,22 @@ class Globe {
     }
   }
 
+  _getIntersections() {
+    const canvas = this.renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    this.mouse.x =
+      (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
+    this.mouse.y =
+      -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    return this.raycaster.intersectObjects(this.markers.children);
+  }
+
   _createRenderer() {
     const renderer = new THREE.WebGLRenderer(this.options.renderer);
     renderer.domElement.addEventListener('click', this.onClick);
+    renderer.domElement.addEventListener('mousemove', this.onMousemove);
+    renderer.domElement.addEventListener('mouseout', this.onMouseout);
     renderer.setSize(this.width, this.height);
     return renderer;
   }
