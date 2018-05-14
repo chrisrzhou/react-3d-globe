@@ -32,22 +32,14 @@ class Globe {
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
-    this.globeGlow = this._createGlobeGlow();
     this.markers = this._createMarkers();
     this.raycaster = this._createRaycaster();
     this.mouse = this._createMouse();
 
-    // center glow around globe
-    this.globe.add(this.globeGlow);
-
     // Add to scenes
     this.camera.add(this.light);
     this.camera.add(this.backlight);
-    this.backlight.position.set(
-      -this.radius * 6, 
-      0,
-      -this.radius * 8,
-    );
+    this.backlight.position.set(-this.radius * 6, 0, -this.radius * 8);
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -63,7 +55,7 @@ class Globe {
   addMarkers(markers) {
     // clear before adding
     this.markers.children.forEach(child => {
-        this.markers.remove(child);
+      this.markers.remove(child);
     });
     const mat = new THREE.MeshLambertMaterial({
       color: 0x000000,
@@ -73,19 +65,26 @@ class Globe {
     markers.forEach(marker => {
       let mesh = null;
       if (marker.type === 'bar') {
-          const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
-          mesh = new THREE.Mesh(
-            new THREE.CubeGeometry(5, 5, 1 + marker.value / 8, 1, 1, 1, mat),
-          );
-          mesh.position.set(position.x, position.y, position.z);
-          mesh.lookAt(new THREE.Vector3(0, 0, 0));
+        const position = latLongToVector(
+          marker.lat,
+          marker.long,
+          this.radius,
+          2,
+        );
+        mesh = new THREE.Mesh(
+          new THREE.CubeGeometry(5, 5, 1 + marker.value / 8, 1, 1, 1, mat),
+        );
+        mesh.position.set(position.x, position.y, position.z);
+        mesh.lookAt(new THREE.Vector3(0, 0, 0));
       } else {
-          mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(10, 10, 20, 20),
-            mat,
-          );
-          const position = latLongToVector(marker.lat, marker.long, this.radius, 10);
-          mesh.position.set(position.x, position.y, position.z);
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 20, 20), mat);
+        const position = latLongToVector(
+          marker.lat,
+          marker.long,
+          this.radius,
+          10,
+        );
+        mesh.position.set(position.x, position.y, position.z);
       }
       mesh && this.markers.add(mesh) && (this.markerMap[mesh.uuid] = marker);
     });
@@ -292,18 +291,6 @@ class Globe {
     const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
     globe.position.set(0, 0, 0);
     return globe;
-  }
-
-  _createGlobeGlow() {
-    const globeGlowMaterial = new THREE.SpriteMaterial({
-      map: new THREE.ImageUtils.loadTexture(this.textures.globeGlow),
-      color: 0x333300,
-      transparent: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const globeGlow = new THREE.Sprite(globeGlowMaterial);
-    globeGlow.scale.set(200, 200, 1.0);
-    return globeGlow;
   }
 
   _createMarkers() {

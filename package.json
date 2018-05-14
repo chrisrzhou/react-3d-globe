@@ -1,14 +1,15 @@
 {
   "name": "react-3d-globe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React ThreeJS Globe",
   "repository": "https://github.com/chrisrzhou/react-3d-globe",
   "homepage": "https://chrisrzhou.github.io/react-3d-globe",
+  "main": "dist/index.js",
   "author": "Chris Zhou <christoper.r.zhou@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "clean": "rimraf build/*",
-    "build": "yarn clean && babel src --out-dir build",
+    "clean": "rimraf dist/*",
+    "build": "yarn clean && babel src --out-dir dist --copy-files",
     "lint": "eslint --fix src stories",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
