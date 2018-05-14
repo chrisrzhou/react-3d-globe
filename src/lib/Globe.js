@@ -33,22 +33,14 @@ class Globe {
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
-    this.globeGlow = this._createGlobeGlow();
     this.markers = this._createMarkers();
     this.raycaster = this._createRaycaster();
     this.mouse = this._createMouse();
 
-    // center glow around globe
-    this.globe.add(this.globeGlow);
-
     // Add to scenes
     this.camera.add(this.light);
     this.camera.add(this.backlight);
-    this.backlight.position.set(
-      -this.radius * 6, 
-      0,
-      -this.radius * 8,
-    );
+    this.backlight.position.set(-this.radius * 6, 0, -this.radius * 8);
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -64,7 +56,7 @@ class Globe {
   addMarkers(markers) {
     // clear before adding
     this.markers.children.forEach(child => {
-        this.markers.remove(child);
+      this.markers.remove(child);
     });
     const minVal = d3.min(markers, marker => marker.value || 10);
     const maxVal = d3.max(markers, marker => marker.value || 10);
@@ -316,18 +308,6 @@ class Globe {
     const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
     globe.position.set(0, 0, 0);
     return globe;
-  }
-
-  _createGlobeGlow() {
-    const globeGlowMaterial = new THREE.SpriteMaterial({
-      map: new THREE.ImageUtils.loadTexture(this.textures.globeGlow),
-      color: 0x333300,
-      transparent: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const globeGlow = new THREE.Sprite(globeGlowMaterial);
-    globeGlow.scale.set(200, 200, 1.0);
-    return globeGlow;
   }
 
   _createMarkers() {
