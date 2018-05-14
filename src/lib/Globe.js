@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import * as d3 from 'd3';
-import {scaleLinear} from 'd3-scale';
 import OrbitControls from 'three-orbitcontrols';
 import * as TWEEN from 'es6-tween';
 
@@ -8,7 +7,7 @@ import {loadTexture} from './loaders';
 import {latLongToVector} from './projections';
 
 class Globe {
-  constructor(width, height, options, textures, onMarkerClick) {
+  constructor(width, height, options, textures, onMarkerClick, onMouseoverMarker) {
     // Bind class variables
     this.options = options;
     this.textures = textures;
@@ -17,11 +16,13 @@ class Globe {
     this.width = width;
     this.height = height;
     this.onMarkerClick = onMarkerClick;
+    this.onMouseoverMarker = onMouseoverMarker;
     this.markerMap = {};
     this.isFocused = false;
     this.mouseoverObj = null;
     this.tweenMap = {};
-    (this.preFocus = {x: 0, y: 0, z: 0}), this.setupScene();
+    this.preFocus = {x: 0, y: 0, z: 0};
+    this.setupScene();
   }
 
   setupScene() {
@@ -136,7 +137,7 @@ class Globe {
       };
       this.focus(to);
       const marker = this.markerMap[obj.uuid];
-      this.onMarkerClick(marker);
+      this.onMarkerClick && this.onMarkerClick(marker);
     } else {
       if (this.isFocused) {
         this.unFocus();
@@ -153,6 +154,8 @@ class Globe {
       if (self.mouseoverObj === obj) {
         return;
       }
+      const marker = this.markerMap[obj.uuid];
+      this.onMouseoverMarker && this.onMouseoverMarker(marker);
       // when mouse moving from one object direct to another
       // we should reset the previous mouseover object
       if (self.mouseoverObj) {
@@ -272,7 +275,6 @@ class Globe {
     const renderer = new THREE.WebGLRenderer(this.options.renderer);
     renderer.domElement.addEventListener('click', this.onClick);
     renderer.domElement.addEventListener('mousemove', this.onMousemove);
-    renderer.domElement.addEventListener('mouseout', this.onMouseout);
     renderer.setSize(this.width, this.height);
     return renderer;
   }

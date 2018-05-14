@@ -42,7 +42,13 @@ export default class React3DGlobe extends React.Component {
     return;
   }
 
-  onMarkerClick = marker => {};
+  onMarkerClick = marker => {
+    console.log(marker);
+  };
+
+  onMouseoverMarker = marker => {
+    console.log(marker);
+  };
 
   renderGlobe() {
     const {
@@ -65,6 +71,7 @@ export default class React3DGlobe extends React.Component {
       options,
       textures,
       this.onMarkerClick,
+      this.onMouseoverMarker,
     );
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);

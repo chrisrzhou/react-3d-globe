@@ -13,7 +13,7 @@ export default {
     rotateSpeed: 0.05,
     enableDamping: true,
     dampingFactor: 0.1,
-    enablePan: false,
+    enablePan: true,
     enableZoom: false,
     enableRotate: true,
     zoomSpeed: 1,
