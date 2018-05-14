@@ -236,7 +236,7 @@ class Globe {
       .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
         self.controls.autoRotate = true;
-        self.controls.enableRotate = false;
+        self.controls.enableRotate = true;
         self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;
         self.controls.maxPolarAngle = self.options.orbitControls.maxPolarAngle;
       })
