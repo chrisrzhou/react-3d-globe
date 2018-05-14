@@ -16,8 +16,8 @@ export default {
     enablePan: false,
     enableZoom: false,
     zoomSpeed: 1,
-    minPolarAngle: Math.PI * 7 / 16,
-    maxPolarAngle: Math.PI * 9 / 16,
+    minPolarAngle: Math.PI * 4 / 16,
+    maxPolarAngle: Math.PI * 6 / 16,
   },
   globe: {
     segments: 50,

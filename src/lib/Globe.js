@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-const TWEEN = require('@tweenjs/tween.js');
+import * as d3 from "d3";
 import OrbitControls from 'three-orbitcontrols';
-
 import {latLongToVector} from './projections';
+import {scaleLinear} from "d3-scale";
+const TWEEN = require('@tweenjs/tween.js');
 
 class Globe {
   constructor(width, height, options, textures, onMarkerClick) {
@@ -65,29 +66,52 @@ class Globe {
     this.markers.children.forEach(child => {
         this.markers.remove(child);
     });
-    const mat = new THREE.MeshLambertMaterial({
-      color: 0x000000,
-      opacity: 0.6,
-      emissive: 0xffffff,
-    });
+    const minVal = d3.min(markers, marker => marker.value || 10);
+    const maxVal = d3.max(markers, marker => marker.value || 10);
+    const barScale = d3.scaleLinear()
+      .domain([minVal, maxVal])
+      .range([50, 500]);
+    const pointScale = d3.scaleLinear()
+      .domain([minVal, maxVal])
+      .range([10, 20]);
     markers.forEach(marker => {
+      const color = marker.color || 0xffffff;
+      let position = latLongToVector(marker.lat, marker.long, this.radius, 2);
       let mesh = null;
-      if (marker.type === 'bar') {
-          const position = latLongToVector(marker.lat, marker.long, this.radius, 2);
+      switch (marker.type) {
+        case 'bar':
+          let size = barScale(marker.value) || 10;
+          let material = new THREE.MeshLambertMaterial({
+            color: marker.color || 0x000000,
+            opacity: 0.6,
+            transparent: true,
+            wireframe: true,
+          });
           mesh = new THREE.Mesh(
-            new THREE.CubeGeometry(5, 5, 1 + marker.value / 8, 1, 1, 1, mat),
+            new THREE.CubeGeometry(7, 7, size, 1, 1, 1, material),
           );
-          mesh.position.set(position.x, position.y, position.z);
-          mesh.lookAt(new THREE.Vector3(0, 0, 0));
-      } else {
+          break;
+        case 'point':
+          size = pointScale(marker.value) || 10;
+          position = latLongToVector(marker.lat, marker.long, this.radius, size);
+          material = new THREE.MeshBasicMaterial({
+            color: marker.color || 0x000000,
+            opacity: 0.6,
+            transparent: true,
+          });
           mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(10, 10, 20, 20),
-            mat,
+            new THREE.SphereGeometry(size, size, size / 2),
+            material,
           );
-          const position = latLongToVector(marker.lat, marker.long, this.radius, 10);
-          mesh.position.set(position.x, position.y, position.z);
+          break;
+        default:
+          throw new Error('Not supported marker type.');
       }
-      mesh && this.markers.add(mesh) && (this.markerMap[mesh.uuid] = marker);
+      mesh.material.color.setHex(color);
+      mesh.position.set(position.x, position.y, position.z);
+      mesh.lookAt(new THREE.Vector3(0, 0, 0));
+      this.markerMap[mesh.uuid] = marker;
+      this.markers.add(mesh);
     });
     this.scene.add(this.markers);
   }
@@ -114,12 +138,7 @@ class Globe {
         y: intersects[0].object.position.y * (radiusScale - 2),
         z: intersects[0].object.position.z * (radiusScale - 2),
       };
-      const from = {
-        x: this.camera.position.x,
-        y: this.camera.position.y,
-        z: this.camera.position.z,
-      };
-      this.focus(from, to);
+      this.focus(to);
       const marker = this.markerMap[intersects[0].object.uuid];
       this.onMarkerClick(marker);
     } else {
@@ -129,12 +148,17 @@ class Globe {
     }
   };
 
-  focus(from, to) {
+  focus(to) {
     this.isFocused = true;
     this.controls.autoRotate = false;
     this.controls.minPolarAngle = Math.PI * 3 / 16;
     this.controls.maxPolarAngle = Math.PI * 10 / 16;
     const camera = this.camera;
+    const from = {
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+    };
     new TWEEN.Tween(from)
       .to(to, 600)
       .easing(TWEEN.Easing.Linear.None)
@@ -253,7 +277,7 @@ class Globe {
   }
 
   _createLight() {
-    const light = new THREE.SpotLight(0xf5f5dc, 2, this.radius * 10);
+    const light = new THREE.SpotLight(0xf5f5dc, 1, this.radius * 10);
     light.target.position.set(0, 0, 0);
     return light;
   }
