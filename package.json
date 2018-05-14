@@ -1,16 +1,36 @@
 {
   "name": "react-3d-globe",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "React ThreeJS Globe",
-  "repository": "https://github.com/chrisrzhou/react-3d-globe",
-  "homepage": "https://chrisrzhou.github.io/react-3d-globe",
-  "main": "dist/index.js",
-  "author": "Chris Zhou <christoper.r.zhou@gmail.com>",
   "license": "MIT",
+  "homepage": "https://chrisrzhou.github.io/react-3d-globe",
+  "repository": "https://github.com/chrisrzhou/react-3d-globe",
+  "keywords": [
+    "react",
+    "threejs",
+    "globe",
+    "3d"
+  ],
+  "authors": [
+    "Chris Zhou <christopher.r.zhou@gmail.com> (https://github.com/chrisrzhou/)",
+    "Chang Liu <wewe.chang@gmail.com> (https://github.com/chngl)"
+  ],
+  "main": "lib/react-3d-globe.js",
+  "module": "es/react-3d-globe.js",
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "src"
+  ],
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf lib dist es",
     "lint": "eslint --fix src stories",
-    "build": "yarn clean && babel src --out-dir dist --copy-files",
+    "build:commonjs": "cross-env NODE_ENV=cjs rollup -c -o lib/react-3d-globe.js",
+    "build:es": "cross-env BABEL_ENV=es NODE_ENV=es rollup -c -o es/react-3d-globe.js",
+    "build:umd": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -o dist/react-3d-globe.js",
+    "build:umd:min": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -o dist/react-3d-globe.min.js",
+    "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "deploy-storybook": "storybook-to-ghpages"
@@ -33,12 +53,14 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.3",
+    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-runtime": "^6.26.0",
+    "cross-env": "^5.1.5",
     "eslint": "^4.13.1",
     "eslint-config-fbjs": "^2.0.1",
     "eslint-config-prettier": "^2.9.0",
@@ -50,6 +72,21 @@
     "eslint-plugin-relay": "^0.0.21",
     "prettier": "1.12.1",
     "rebass": "^1.0.7",
-    "rimraf": "^2.6.2"
-  }
+    "rimraf": "^2.6.2",
+    "rollup": "^0.58.2",
+    "rollup-plugin-babel": "^3.0.4",
+    "rollup-plugin-commonjs": "^9.1.3",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^3.0.0"
+  },
+  "npmName": "react-3d-globe",
+  "npmFileMap": [
+    {
+      "basePath": "/dist/",
+      "files": [
+        "*.js"
+      ]
+    }
+  ]
 }
