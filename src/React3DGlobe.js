@@ -1,6 +1,6 @@
 import React from 'react';
-import ReactResizeDetector from 'react-resize-detector';
 
+import ResizeSensor from './ResizeSensor';
 import Globe from './lib/Globe';
 import options from './defaults/options';
 import textures from './defaults/textures';
@@ -86,31 +86,26 @@ export default class React3DGlobe extends React.Component {
   render() {
     return (
       <div
-        style={{height: '100%', width: '100%'}}
+        style={{position: 'absolute', height: '100%', width: '100%'}}
         ref={mount => {
           this.mount = mount;
         }}>
-        <ReactResizeDetector
-          handleHeight
-          handleWidth
-          onResize={this.onResize}
-        />
+        <ResizeSensor onResize={this.onResize} />
       </div>
     );
   }
 
-  onResize = (width, height) => {
-    // do not resize if change is small
-    this.setState(prevState => {
-      if (
-        (!this.props.width && Math.abs(prevState.width - width) > 10) ||
-        (!this.props.height && Math.abs(prevState.height - height) > 10)
-      ) {
-        return {
-          height,
-          width,
-        };
-      }
-    });
+  onResize = () => {
+    // if neither width nor height is provided via props
+    if (!this.props.width) {
+      this.setState({
+        width: this.mount.clientWidth,
+      });
+    }
+    if (!this.props.height) {
+      this.setState({
+        height: this.mount.clientHeight,
+      });
+    }
   };
 }

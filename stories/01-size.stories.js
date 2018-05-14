@@ -17,15 +17,6 @@ storiesOf('Size', module)
       <React3DGlobe height={400} width={600} />
     </App>
   ))
-  .add('Inferred Size', () => (
-    <App
-      title="Inherit Size"
-      description="Canvas will inherit fixed size from parent div">
-      <div style={{height: 300, width: 800}}>
-        <React3DGlobe />
-      </div>
-    </App>
-  ))
   .add('Responsive Size', () => (
     <App title="Responsive Sive" description="Resizes if parent div is resized">
       <div style={{height: '100vh', width: '100vw'}}>
