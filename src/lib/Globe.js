@@ -19,6 +19,8 @@ class Globe {
     this.onMarkerClick = onMarkerClick;
     this.markerMap = {};
     this.isFocused = false;
+    this.mouseoverObj = null;
+    this.tweenMap = {};
     (this.preFocus = {x: 0, y: 0, z: 0}), this.setupScene();
   }
 
@@ -118,9 +120,8 @@ class Globe {
   onClick = () => {
     event.preventDefault();
     const {radiusScale} = this.options.camera;
-    const intersections = this._getIntersections();
-    if (intersections.length > 0) {
-      const obj = intersections[0].object;
+    const obj = this._getIntersectedObject();
+    if (obj) {
       if (!this.isFocused) {
         this.preFocus = {
           x: this.camera.position.x,
@@ -137,7 +138,7 @@ class Globe {
       const marker = this.markerMap[obj.uuid];
       this.onMarkerClick(marker);
     } else {
-      if (!this.controls.autoRotate) {
+      if (this.isFocused) {
         this.unFocus();
       }
     }
@@ -145,11 +146,47 @@ class Globe {
 
   onMousemove = () => {
     event.preventDefault();
-    const intersections = this._getIntersections();
-    if (intersections.length > 0) {
-      console.log('mouse over');
+    const self = this;
+    const obj = this._getIntersectedObject();
+    if (obj) {
+      // do nothing when the mouse hasn't moved out of the current object
+      if (self.mouseoverObj === obj) {
+        return;
+      }
+      // when mouse moving from one object direct to another
+      // we should reset the previous mouseover object
+      if (self.mouseoverObj) {
+        self.tweenMap[self.mouseoverObj.uuid].stop();
+        self.mouseoverObj.scale.x = 1;
+        self.mouseoverObj.scale.y = 1;
+        self.mouseoverObj.scale.z = 1;
+      }
+
+      self.mouseoverObj = obj;
+      const from = {scale: 1};
+      const to = {scale: 2};
+      self.tweenMap[obj.uuid] = new TWEEN.Tween(from)
+        .to(to, 300)
+        .easing(TWEEN.Easing.Linear.None)
+        .on('update', function() {
+          if (self.mouseoverObj == obj) {
+            obj.scale.x = this.object.scale;
+            obj.scale.y = this.object.scale;
+            obj.scale.z = this.object.scale;
+          } else {
+            obj.scale.x = 1;
+            obj.scale.y = 1;
+            obj.scale.z = 1;
+          }
+        })
+        .start();
     } else {
-      console.log('mouse out');
+      if (self.mouseoverObj) {
+        self.mouseoverObj.scale.x = 1;
+        self.mouseoverObj.scale.y = 1;
+        self.mouseoverObj.scale.z = 1;
+        self.mouseoverObj = null;
+      }
     }
   };
 
@@ -171,6 +208,7 @@ class Globe {
       .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
         self.controls.autoRotate = false;
+        self.controls.enableRotate = false;
         self.controls.minPolarAngle = Math.PI * 3 / 16;
         self.controls.maxPolarAngle = Math.PI * 10 / 16;
       })
@@ -195,6 +233,7 @@ class Globe {
       .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
         self.controls.autoRotate = true;
+        self.controls.enableRotate = false;
         self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;
         self.controls.maxPolarAngle = self.options.orbitControls.maxPolarAngle;
       })
@@ -214,7 +253,7 @@ class Globe {
     }
   }
 
-  _getIntersections() {
+  _getIntersectedObject() {
     const canvas = this.renderer.domElement;
     const rect = canvas.getBoundingClientRect();
     this.mouse.x =
@@ -222,7 +261,11 @@ class Globe {
     this.mouse.y =
       -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    return this.raycaster.intersectObjects(this.markers.children);
+    const objects = this.raycaster.intersectObjects(this.markers.children);
+    if (objects.length > 0) {
+      return objects[0].object;
+    }
+    return null;
   }
 
   _createRenderer() {
@@ -267,6 +310,7 @@ class Globe {
     const {
       enablePan,
       enableZoom,
+      enableRotate,
       zoomSpeed,
       rotateSpeed,
       enableDamping,
@@ -279,6 +323,7 @@ class Globe {
     const orbitControls = new OrbitControls(this.camera);
     orbitControls.enablePan = enablePan;
     orbitControls.enableZoom = enableZoom;
+    orbitControls.enableRotate = enableRotate;
     orbitControls.zoomSpeed = zoomSpeed;
     orbitControls.rotateSpeed = rotateSpeed;
     orbitControls.enableDamping = enableDamping;

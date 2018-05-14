@@ -15,6 +15,7 @@ export default {
     dampingFactor: 0.1,
     enablePan: false,
     enableZoom: false,
+    enableRotate: true,
     zoomSpeed: 1,
     minPolarAngle: Math.PI * 4 / 16,
     maxPolarAngle: Math.PI * 6 / 16,
