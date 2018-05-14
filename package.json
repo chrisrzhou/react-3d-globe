@@ -1,6 +1,6 @@
 {
   "name": "react-3d-globe",
-  "version": "0.1.6",
+  "version": "0.1.10",
   "description": "React ThreeJS Globe",
   "repository": "https://github.com/chrisrzhou/react-3d-globe",
   "homepage": "https://chrisrzhou.github.io/react-3d-globe",
@@ -10,14 +10,14 @@
   "scripts": {
     "clean": "rimraf dist",
     "lint": "eslint --fix src stories",
-    "build": "./node_modules/.bin/rollup -c",
+    "build": "yarn clean && babel src --out-dir dist --copy-files",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "deploy-storybook": "storybook-to-ghpages"
   },
   "dependencies": {
-    "@tweenjs/tween.js": "^17.2.0",
     "d3": "^5.4.0",
+    "es6-tween": "^5.2.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "three": "^0.92.0",
@@ -33,14 +33,12 @@
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.0.3",
-    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-runtime": "^6.26.0",
-    "babelrc-rollup": "^3.0.0",
     "eslint": "^4.13.1",
     "eslint-config-fbjs": "^2.0.1",
     "eslint-config-prettier": "^2.9.0",
@@ -52,9 +50,6 @@
     "eslint-plugin-relay": "^0.0.21",
     "prettier": "1.12.1",
     "rebass": "^1.0.7",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.58.2",
-    "rollup-plugin-babel": "^3.0.4",
-    "rollup-plugin-image": "^1.0.2"
+    "rimraf": "^2.6.2"
   }
 }

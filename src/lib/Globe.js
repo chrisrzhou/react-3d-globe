@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import * as d3 from 'd3';
 import {scaleLinear} from 'd3-scale';
 import OrbitControls from 'three-orbitcontrols';
-import TWEEN from '@tweenjs/tween.js';
+import * as TWEEN from 'es6-tween';
 
 import {loadTexture} from './loaders';
 import {latLongToVector} from './projections';
@@ -19,10 +19,7 @@ class Globe {
     this.onMarkerClick = onMarkerClick;
     this.markerMap = {};
     this.isFocused = false;
-    this.preFocusX = 0;
-    this.preFocusY = 0;
-    this.preFocusZ = 0;
-    this.setupScene();
+    (this.preFocus = {x: 0, y: 0, z: 0}), this.setupScene();
   }
 
   setupScene() {
@@ -130,9 +127,11 @@ class Globe {
     const {radiusScale} = this.options.camera;
     if (intersects.length > 0) {
       if (!this.isFocused) {
-        this.preFocusX = this.camera.position.x;
-        this.preFocusY = this.camera.position.y;
-        this.preFocusZ = this.camera.position.z;
+        this.preFocus = {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z,
+        };
       }
       const to = {
         x: intersects[0].object.position.x * (radiusScale - 2),
@@ -150,25 +149,25 @@ class Globe {
   };
 
   focus(to) {
-    this.isFocused = true;
-    this.controls.autoRotate = false;
-    this.controls.minPolarAngle = Math.PI * 3 / 16;
-    this.controls.maxPolarAngle = Math.PI * 10 / 16;
-    const camera = this.camera;
+    const self = this;
+    self.isFocused = true;
     const from = {
-      x: this.camera.position.x,
-      y: this.camera.position.y,
-      z: this.camera.position.z,
+      x: self.camera.position.x,
+      y: self.camera.position.y,
+      z: self.camera.position.z,
     };
     new TWEEN.Tween(from)
       .to(to, 600)
       .easing(TWEEN.Easing.Linear.None)
-      .onUpdate(function() {
-        camera.position.set(this._object.x, this._object.y, this._object.z);
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      .on('update', function() {
+        self.camera.position.set(this.object.x, this.object.y, this.object.z);
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
       })
-      .onComplete(function() {
-        camera.lookAt(new THREE.Vector3(0, 0, 0));
+      .on('complete', function() {
+        self.camera.lookAt(new THREE.Vector3(0, 0, 0));
+        self.controls.autoRotate = false;
+        self.controls.minPolarAngle = Math.PI * 3 / 16;
+        self.controls.maxPolarAngle = Math.PI * 10 / 16;
       })
       .start();
   }
@@ -182,17 +181,13 @@ class Globe {
       z: self.camera.position.z,
     };
     new TWEEN.Tween(cameraPosition)
-      .to({x: self.preFocusX, y: self.preFocusY, z: self.preFocusZ}, 600)
+      .to(this.preFocus, 600)
       .easing(TWEEN.Easing.Linear.None)
-      .onUpdate(function() {
-        self.camera.position.set(
-          this._object.x,
-          this._object.y,
-          this._object.z,
-        );
+      .on('update', function() {
+        self.camera.position.set(this.object.x, this.object.y, this.object.z);
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
       })
-      .onComplete(function() {
+      .on('complete', function() {
         self.camera.lookAt(new THREE.Vector3(0, 0, 0));
         self.controls.autoRotate = true;
         self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;

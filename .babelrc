@@ -1,14 +1,8 @@
 {
   "presets": [
-    [
-      "env",
-      {
-        "modules": false
-      }
-    ],
+    "env",
     "flow",
     "react",
     "stage-0"
-  ],
-  "plugins": ["external-helpers"]
+  ]
 }
