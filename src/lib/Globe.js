@@ -378,16 +378,27 @@ class Globe {
   }
 
   _createGlobe() {
-    const {segments, rings} = this.options.globe;
-    const sphereGeometry = new THREE.SphereGeometry(
-      this.radius,
-      segments,
-      rings,
-    );
     const sphereMaterial = new THREE.MeshLambertMaterial({
       map: loadTexture(this.textures.globe),
     });
-    const globe = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    let geometry = null;
+    switch (this.options.globe.type) {
+      case 'low-poly':
+        geometry = new THREE.DodecahedronGeometry(this.radius, 2);
+        geometry.computeFlatVertexNormals();
+        sphereMaterial.flatShading = true;
+        break;
+      case 'real':
+        geometry = new THREE.SphereGeometry(
+          this.radius,
+          this.options.globe.segments,
+          this.options.globe.rings,
+        );
+        break;
+      default:
+        throw new Error('Not supported globe type.');
+    }
+    const globe = new THREE.Mesh(geometry, sphereMaterial);
     globe.position.set(0, 0, 0);
     return globe;
   }
