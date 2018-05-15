@@ -264,9 +264,15 @@ class Globe {
     this.mouse.y =
       -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    const objects = this.raycaster.intersectObjects(this.markers.children);
+    const all = [this.globe, ...this.markers.children];
+    const objects = this.raycaster.intersectObjects(all);
     if (objects.length > 0) {
-      return objects[0].object;
+      // This is to filter out the globe.
+      // If we don't have this check, user would be able to click through the 
+      // earth and hit the marker on the back side of the globe
+      if (objects[0].object.uuid !== this.globe.uuid) {
+        return objects[0].object;
+      }
     }
     return null;
   }
