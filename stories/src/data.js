@@ -8999,4 +8999,16 @@ export const cities = [
         "rank": "1000", 
         "state": "Florida"
     }
-]
+];
+
+export const getMarkers = (type) => {
+	return cities
+		.filter(city => parseInt(city.rank, 10) <= 300)
+		.map(city => ({
+			lat: city.latitude,
+			long: city.longitude,
+			value: parseInt(city.population, 10),
+			color: 0xffff00,
+			type,
+		}));
+}

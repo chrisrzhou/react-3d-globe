@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, ButtonOutline, Group, Label} from 'rebass';
 
-import React3DGlobe from './../../src';
+import DefaultGlobe from './DefaultGlobe';
 import spaceDefault from './textures/space-default.jpg';
 import spaceTree from './textures/space-tree.jpg';
 import spacePlanets from './textures/space-planets.jpg';
@@ -96,7 +96,7 @@ export default class TexturesExample extends React.Component {
             this.setState({selectedSpaceTexture: value});
           }}
         />
-        <React3DGlobe
+        <DefaultGlobe
           globeTexture={selectedGlobeTexture}
           spaceTexture={selectedSpaceTexture}
         />
