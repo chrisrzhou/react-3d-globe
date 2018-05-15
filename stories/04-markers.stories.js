@@ -3,30 +3,29 @@ import {storiesOf} from '@storybook/react';
 
 import App from './src/App';
 import DefaultGlobe from './src/DefaultGlobe';
-import {cities} from './src/data';
+import MarkerEventsExample from './src/MarkerEventsExample';
+import {getMockData} from './src/mockData';
 
-export const getMarkers = (type, color) => {
-	return cities
-		.filter(city => parseInt(city.rank, 10) <= 300)
-		.map(city => ({
-			lat: city.latitude,
-			long: city.longitude,
-			value: parseInt(city.population, 10),
-			color,
-			type,
-		}));
-}
+const pointMarkers = getMockData(0xffff00, 'point');
+const barMarkers = getMockData(0xffff00, 'bar');
 
 storiesOf('Data and Markers', module)
   .add('Point Markers', () => (
     <App
       title="Point Markers"
       description="Render data as points on the globe ">
-      <DefaultGlobe markers={getMarkers('point', 0xfc64ba)} />
+      <DefaultGlobe markers={pointMarkers} />
     </App>
   ))
   .add('Bar Markers', () => (
     <App title="Bar Markers" description="Render data as bars on the globe">
-      <DefaultGlobe markers={getMarkers('bar', 0xffff00)} />
+      <DefaultGlobe markers={barMarkers} />
+    </App>
+  ))
+  .add('Hover and Click Events', () => (
+    <App
+      title="Hover and Click Events"
+      description="Bind hover and click events for markers">
+      <MarkerEventsExample markers={barMarkers} />
     </App>
   ));

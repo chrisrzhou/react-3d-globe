@@ -23,7 +23,7 @@ export default {
   globe: {
     segments: 50,
     rings: 50,
-    type: 'low-poly',
+    type: 'real',
   },
   renderer: {
     antialias: true,

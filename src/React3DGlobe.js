@@ -8,12 +8,11 @@ import textures from './defaults/textures';
 const MIN_HEIGHT = 600;
 const MIN_WIDTH = 600;
 
-export default class React3DGlobe extends React.Component {
+export default class React3DGlobe extends React.PureComponent {
   static defaultProps = {
     markers: [],
     options,
     globeTexture: textures.globe,
-    globeGlowTexture: textures.globeGlow,
     spaceTexture: textures.space,
   };
 
@@ -43,26 +42,19 @@ export default class React3DGlobe extends React.Component {
   }
 
   onMarkerClick = marker => {
-    console.log(marker);
+    this.props.onMarkerClick && this.props.onMarkerClick(marker);
   };
 
-  onMouseoverMarker = marker => {
-    console.log(marker);
+  onMarkerMouseover = marker => {
+    this.props.onMarkerMouseover && this.props.onMarkerMouseover(marker);
   };
 
   renderGlobe() {
-    const {
-      options,
-      globeTexture,
-      globeGlowTexture,
-      spaceTexture,
-      markers,
-    } = this.props;
+    const {options, globeTexture, spaceTexture, markers} = this.props;
     // compute height and width with priority: props > parent > minValues
     const {height, width} = this.state;
     const textures = {
       globe: globeTexture,
-      globeGlow: globeGlowTexture,
       space: spaceTexture,
     };
     this.globe = new Globe(
@@ -71,7 +63,7 @@ export default class React3DGlobe extends React.Component {
       options,
       textures,
       this.onMarkerClick,
-      this.onMouseoverMarker,
+      this.onMarkerMouseover,
     );
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);

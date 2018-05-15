@@ -13,7 +13,7 @@ class Globe {
     options,
     textures,
     onMarkerClick,
-    onMouseoverMarker,
+    onMarkerMouseover,
   ) {
     // Bind class variables
     this.options = options;
@@ -23,7 +23,7 @@ class Globe {
     this.width = width;
     this.height = height;
     this.onMarkerClick = onMarkerClick;
-    this.onMouseoverMarker = onMouseoverMarker;
+    this.onMarkerMouseover = onMarkerMouseover;
     this.markerMap = {};
     this.isFocused = false;
     this.mouseoverObj = null;
@@ -162,7 +162,7 @@ class Globe {
         return;
       }
       const marker = this.markerMap[obj.uuid];
-      this.onMouseoverMarker && this.onMouseoverMarker(marker);
+      this.onMarkerMouseover && this.onMarkerMouseover(marker);
       // when mouse moving from one object direct to another
       // we should reset the previous mouseover object
       if (self.mouseoverObj) {
@@ -275,7 +275,7 @@ class Globe {
     const objects = this.raycaster.intersectObjects(all);
     if (objects.length > 0) {
       // This is to filter out the globe.
-      // If we don't have this check, user would be able to click through the 
+      // If we don't have this check, user would be able to click through the
       // earth and hit the marker on the back side of the globe
       if (objects[0].object.uuid !== this.globe.uuid) {
         return objects[0].object;
