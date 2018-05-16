@@ -16,8 +16,8 @@ class Globe {
     onMarkerClick,
     onMarkerMouseover,
   ) {
-    // Bind class variables
     this.options = options;
+    // Bind class variables this.options = options;
     this.textures = textures;
     this.aspect = width / height;
     this.radius = Math.min(width, height);
@@ -80,6 +80,9 @@ class Globe {
       .domain([minVal, maxVal])
       .range([4, 10]);
     markers.forEach(marker => {
+      if (this.options.globe.type === 'low-poly') {
+        marker.long = (marker.long + 180) % 180;
+      }
       const color = marker.color || 0xffffff;
       let position = latLongToVector(marker.lat, marker.long, this.radius, 2);
       let mesh = null;
