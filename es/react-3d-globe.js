@@ -1,9 +1,8 @@
 import React from 'react';
-import { MeshLambertMaterial, Mesh, CubeGeometry, MeshBasicMaterial, SphereGeometry, Vector3, WebGLRenderer, Scene, PerspectiveCamera, SpotLight, BackSide, MeshFaceMaterial, Group, Raycaster, Vector2, TextureLoader } from 'three';
+import { MeshLambertMaterial, Mesh, CubeGeometry, MeshBasicMaterial, SphereGeometry, Vector3, WebGLRenderer, Scene, PerspectiveCamera, SpotLight, BackSide, DodecahedronGeometry, Group, Raycaster, Vector2, TextureLoader } from 'three';
 import { min, max, scaleLinear } from 'd3';
-import 'd3-scale';
 import OrbitControls from 'three-orbitcontrols';
-import { update, Tween, Easing } from 'es6-tween';
+import { Tween, Easing, update } from 'es6-tween';
 
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
@@ -105,7 +104,7 @@ var latLongToVector = function latLongToVector(lat, lon, radius) {
 };
 
 var Globe = function () {
-  function Globe(width, height, options, textures, onMarkerClick) {
+  function Globe(width, height, options, textures, disableUnfocus, onMarkerClick, onMarkerMouseover) {
     var _this = this;
 
     classCallCheck(this, Globe);
@@ -114,9 +113,8 @@ var Globe = function () {
       event.preventDefault();
       var radiusScale = _this.options.camera.radiusScale;
 
-      var intersections = _this._getIntersections();
-      if (intersections.length > 0) {
-        var obj = intersections[0].object;
+      var obj = _this._getIntersectedObject();
+      if (obj) {
         if (!_this.isFocused) {
           _this.preFocus = {
             x: _this.camera.position.x,
@@ -131,21 +129,56 @@ var Globe = function () {
         };
         _this.focus(to);
         var marker = _this.markerMap[obj.uuid];
-        _this.onMarkerClick(marker);
+        _this.onMarkerClick && _this.onMarkerClick(event, marker);
       } else {
-        if (!_this.controls.autoRotate) {
-          _this.unFocus();
+        // we will use globe.isFocused to override internal focus state
+        if (!_this.disableUnfocus && _this.isFocused) {
+          _this.unfocus();
         }
       }
     };
 
     this.onMousemove = function () {
       event.preventDefault();
-      var intersections = _this._getIntersections();
-      if (intersections.length > 0) {
-        console.log('mouse over');
+      var self = _this;
+      var obj = _this._getIntersectedObject();
+      if (obj) {
+        // do nothing when the mouse hasn't moved out of the current object
+        if (self.mouseoverObj === obj) {
+          return;
+        }
+        var marker = _this.markerMap[obj.uuid];
+        _this.onMarkerMouseover && _this.onMarkerMouseover(event, marker);
+        // when mouse moving from one object direct to another
+        // we should reset the previous mouseover object
+        if (self.mouseoverObj) {
+          self.tweenMap[self.mouseoverObj.uuid].stop();
+          self.mouseoverObj.scale.x = 1;
+          self.mouseoverObj.scale.y = 1;
+          self.mouseoverObj.scale.z = 1;
+        }
+
+        self.mouseoverObj = obj;
+        var from = { scale: 1 };
+        var to = { scale: 2 };
+        self.tweenMap[obj.uuid] = new Tween(from).to(to, 300).easing(Easing.Linear.None).on('update', function () {
+          if (self.mouseoverObj == obj) {
+            obj.scale.x = this.object.scale;
+            obj.scale.y = this.object.scale;
+            obj.scale.z = this.object.scale;
+          } else {
+            obj.scale.x = 1;
+            obj.scale.y = 1;
+            obj.scale.z = 1;
+          }
+        }).start();
       } else {
-        console.log('mouse out');
+        if (self.mouseoverObj) {
+          self.mouseoverObj.scale.x = 1;
+          self.mouseoverObj.scale.y = 1;
+          self.mouseoverObj.scale.z = 1;
+          self.mouseoverObj = null;
+        }
       }
     };
 
@@ -164,9 +197,14 @@ var Globe = function () {
     this.width = width;
     this.height = height;
     this.onMarkerClick = onMarkerClick;
+    this.onMarkerMouseover = onMarkerMouseover;
     this.markerMap = {};
     this.isFocused = false;
-    this.preFocus = { x: 0, y: 0, z: 0 }, this.setupScene();
+    this.mouseoverObj = null;
+    this.tweenMap = {};
+    this.preFocus = { x: 0, y: 0, z: 0 };
+    this.disableUnfocus = disableUnfocus || false;
+    this.setupScene();
   }
 
   Globe.prototype.setupScene = function setupScene() {
@@ -255,6 +293,10 @@ var Globe = function () {
   Globe.prototype.focus = function focus(to) {
     var self = this;
     self.isFocused = true;
+    self.controls.autoRotate = false;
+    self.controls.enableRotate = false;
+    self.controls.minPolarAngle = Math.PI * 3 / 16;
+    self.controls.maxPolarAngle = Math.PI * 13 / 16;
     var from = {
       x: self.camera.position.x,
       y: self.camera.position.y,
@@ -265,13 +307,10 @@ var Globe = function () {
       self.camera.lookAt(new Vector3(0, 0, 0));
     }).on('complete', function () {
       self.camera.lookAt(new Vector3(0, 0, 0));
-      self.controls.autoRotate = false;
-      self.controls.minPolarAngle = Math.PI * 3 / 16;
-      self.controls.maxPolarAngle = Math.PI * 10 / 16;
     }).start();
   };
 
-  Globe.prototype.unFocus = function unFocus() {
+  Globe.prototype.unfocus = function unfocus() {
     var self = this;
     self.isFocused = false;
     var cameraPosition = {
@@ -285,6 +324,7 @@ var Globe = function () {
     }).on('complete', function () {
       self.camera.lookAt(new Vector3(0, 0, 0));
       self.controls.autoRotate = true;
+      self.controls.enableRotate = true;
       self.controls.minPolarAngle = self.options.orbitControls.minPolarAngle;
       self.controls.maxPolarAngle = self.options.orbitControls.maxPolarAngle;
     }).start();
@@ -296,20 +336,29 @@ var Globe = function () {
     }
   };
 
-  Globe.prototype._getIntersections = function _getIntersections() {
+  Globe.prototype._getIntersectedObject = function _getIntersectedObject() {
     var canvas = this.renderer.domElement;
     var rect = canvas.getBoundingClientRect();
     this.mouse.x = (event.pageX - rect.left - window.scrollX) / canvas.clientWidth * 2 - 1;
     this.mouse.y = -(event.pageY - rect.top - window.scrollY) / canvas.clientHeight * 2 + 1;
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    return this.raycaster.intersectObjects(this.markers.children);
+    var all = [this.globe].concat(this.markers.children);
+    var objects = this.raycaster.intersectObjects(all);
+    if (objects.length > 0) {
+      // This is to filter out the globe.
+      // If we don't have this check, user would be able to click through the
+      // earth and hit the marker on the back side of the globe
+      if (objects[0].object.uuid !== this.globe.uuid) {
+        return objects[0].object;
+      }
+    }
+    return null;
   };
 
   Globe.prototype._createRenderer = function _createRenderer() {
     var renderer = new WebGLRenderer(this.options.renderer);
     renderer.domElement.addEventListener('click', this.onClick);
     renderer.domElement.addEventListener('mousemove', this.onMousemove);
-    renderer.domElement.addEventListener('mouseout', this.onMouseout);
     renderer.setSize(this.width, this.height);
     return renderer;
   };
@@ -342,6 +391,7 @@ var Globe = function () {
     var _options$orbitControl = this.options.orbitControls,
         enablePan = _options$orbitControl.enablePan,
         enableZoom = _options$orbitControl.enableZoom,
+        enableRotate = _options$orbitControl.enableRotate,
         zoomSpeed = _options$orbitControl.zoomSpeed,
         rotateSpeed = _options$orbitControl.rotateSpeed,
         enableDamping = _options$orbitControl.enableDamping,
@@ -351,9 +401,10 @@ var Globe = function () {
         minPolarAngle = _options$orbitControl.minPolarAngle,
         maxPolarAngle = _options$orbitControl.maxPolarAngle;
 
-    var orbitControls = new OrbitControls(this.camera);
+    var orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
     orbitControls.enablePan = enablePan;
     orbitControls.enableZoom = enableZoom;
+    orbitControls.enableRotate = enableRotate;
     orbitControls.zoomSpeed = zoomSpeed;
     orbitControls.rotateSpeed = rotateSpeed;
     orbitControls.enableDamping = enableDamping;
@@ -366,7 +417,7 @@ var Globe = function () {
   };
 
   Globe.prototype._createLight = function _createLight() {
-    var light = new SpotLight(0xf5f5dc, 1, this.radius * 10);
+    var light = new SpotLight(0xf5f5dc, 1.5, this.radius * 10);
     light.target.position.set(0, 0, 0);
     return light;
   };
@@ -378,28 +429,30 @@ var Globe = function () {
   };
 
   Globe.prototype._createSpace = function _createSpace() {
-    var spaceGeometry = new CubeGeometry(5000, 5000, 5000);
-    var spaceMaterials = [];
-    for (var i = 0; i < 6; i++) {
-      spaceMaterials.push(new MeshBasicMaterial({
-        map: loadTexture(this.textures.space),
-        side: BackSide
-      }));
-    }var spaceMaterial = new MeshFaceMaterial(spaceMaterials);
-    var space = new Mesh(spaceGeometry, spaceMaterial);
-    return space;
+    return new Mesh(new SphereGeometry(Math.min(this.options.space.radius, this.radius * 6), this.options.space.widthSegments, this.options.space.heightSegments), new MeshBasicMaterial({
+      map: loadTexture(this.textures.space),
+      side: BackSide
+    }));
   };
 
   Globe.prototype._createGlobe = function _createGlobe() {
-    var _options$globe = this.options.globe,
-        segments = _options$globe.segments,
-        rings = _options$globe.rings;
-
-    var sphereGeometry = new SphereGeometry(this.radius, segments, rings);
     var sphereMaterial = new MeshLambertMaterial({
       map: loadTexture(this.textures.globe)
     });
-    var globe = new Mesh(sphereGeometry, sphereMaterial);
+    var geometry = null;
+    switch (this.options.globe.type) {
+      case 'low-poly':
+        geometry = new DodecahedronGeometry(this.radius, 2);
+        geometry.computeFlatVertexNormals();
+        sphereMaterial.flatShading = true;
+        break;
+      case 'real':
+        geometry = new SphereGeometry(this.radius, this.options.globe.widthSegments, this.options.globe.heightSegments);
+        break;
+      default:
+        throw new Error('Not supported globe type.');
+    }
+    var globe = new Mesh(geometry, sphereMaterial);
     globe.position.set(0, 0, 0);
     return globe;
   };
@@ -434,15 +487,23 @@ var options = {
     rotateSpeed: 0.05,
     enableDamping: true,
     dampingFactor: 0.1,
-    enablePan: false,
+    enablePan: true,
     enableZoom: false,
+    enableRotate: true,
     zoomSpeed: 1,
-    minPolarAngle: Math.PI * 4 / 16,
-    maxPolarAngle: Math.PI * 6 / 16
+    minPolarAngle: Math.PI * 7 / 16,
+    maxPolarAngle: Math.PI * 9 / 16
   },
   globe: {
-    segments: 50,
-    rings: 50
+    isFocused: true,
+    widthSegments: 50,
+    heightSegments: 50,
+    type: 'real'
+  },
+  space: {
+    radius: 5000,
+    widthSegments: 50,
+    heightSegments: 50
   },
   renderer: {
     antialias: true
@@ -457,8 +518,8 @@ var textures = {
 var MIN_HEIGHT = 600;
 var MIN_WIDTH = 600;
 
-var React3DGlobe = function (_React$Component) {
-  inherits(React3DGlobe, _React$Component);
+var React3DGlobe = function (_React$PureComponent) {
+  inherits(React3DGlobe, _React$PureComponent);
 
   function React3DGlobe() {
     var _temp, _this, _ret;
@@ -469,10 +530,14 @@ var React3DGlobe = function (_React$Component) {
       args[_key] = arguments[_key];
     }
 
-    return _ret = (_temp = (_this = possibleConstructorReturn(this, _React$Component.call.apply(_React$Component, [this].concat(args))), _this), _this.state = {
+    return _ret = (_temp = (_this = possibleConstructorReturn(this, _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args))), _this), _this.state = {
       height: MIN_HEIGHT,
       width: MIN_WIDTH
-    }, _this.onMarkerClick = function (marker) {}, _this.onResize = function () {
+    }, _this.onMarkerClick = function (event, marker) {
+      _this.props.onMarkerClick && _this.props.onMarkerClick(event, marker);
+    }, _this.onMarkerMouseover = function (event, marker) {
+      _this.props.onMarkerMouseover && _this.props.onMarkerMouseover(event, marker);
+    }, _this.onResize = function () {
       // if neither width nor height is provided via props
       if (!_this.props.width) {
         _this.setState({
@@ -500,9 +565,11 @@ var React3DGlobe = function (_React$Component) {
         height = _state.height,
         width = _state.width;
 
-    if (prevProps !== this.props) {
-      this.cleanup();
-      this.renderGlobe();
+    if (this.props.disableUnfocus !== prevProps.disableUnfocus) {
+      this.globe.disableUnfocus = this.props.disableUnfocus;
+      if (!this.globe.disableUnfocus && this.globe.isFocused) {
+        this.globe.unfocus();
+      }
     }
     if (this.state !== prevState) {
       this.globe.updateSize(width, height);
@@ -512,9 +579,9 @@ var React3DGlobe = function (_React$Component) {
 
   React3DGlobe.prototype.renderGlobe = function renderGlobe() {
     var _props = this.props,
+        disableUnfocus = _props.disableUnfocus,
         options$$1 = _props.options,
         globeTexture = _props.globeTexture,
-        globeGlowTexture = _props.globeGlowTexture,
         spaceTexture = _props.spaceTexture,
         markers = _props.markers;
     // compute height and width with priority: props > parent > minValues
@@ -525,10 +592,9 @@ var React3DGlobe = function (_React$Component) {
 
     var textures$$1 = {
       globe: globeTexture,
-      globeGlow: globeGlowTexture,
       space: spaceTexture
     };
-    this.globe = new Globe(width, height, options$$1, textures$$1, this.onMarkerClick);
+    this.globe = new Globe(width, height, options$$1, textures$$1, disableUnfocus, this.onMarkerClick, this.onMarkerMouseover);
     this.globe.addMarkers(markers);
     this.mount.appendChild(this.globe.renderer.domElement);
     this.globe.render();
@@ -552,7 +618,10 @@ var React3DGlobe = function (_React$Component) {
     return React.createElement(
       'div',
       {
-        style: { position: 'absolute', height: '100%', width: '100%' },
+        style: {
+          height: '100%',
+          width: '100%'
+        },
         ref: function ref(mount) {
           _this2.mount = mount;
         } },
@@ -561,14 +630,19 @@ var React3DGlobe = function (_React$Component) {
   };
 
   return React3DGlobe;
-}(React.Component);
+}(React.PureComponent);
 
 React3DGlobe.defaultProps = {
+  disableUnfocus: false,
   markers: [],
   options: options,
   globeTexture: textures.globe,
-  globeGlowTexture: textures.globeGlow,
   spaceTexture: textures.space
 };
 
+var getDefaultOptions = function getDefaultOptions() {
+  return options;
+};
+
 export default React3DGlobe;
+export { getDefaultOptions };
