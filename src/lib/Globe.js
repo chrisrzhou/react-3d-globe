@@ -66,11 +66,8 @@ class Globe {
     this.renderer.render(this.scene, this.camera);
   }
 
-  addMarkers(markers) {
-    // clear before adding
-    this.markers.children.forEach(child => {
-      this.markers.remove(child);
-    });
+  setMarkers = markers => {
+    this.markers.children = []; // clear before adding
     const minVal = d3.min(markers, marker => marker.value || 10);
     const maxVal = d3.max(markers, marker => marker.value || 10);
     const range = minVal != maxVal ? [50, 500] : [50, 50];
@@ -125,7 +122,18 @@ class Globe {
       this.markers.add(mesh);
     });
     this.scene.add(this.markers);
-  }
+  };
+
+  getRendererDomElement = () => {
+    return this.renderer.domElement;
+  };
+
+  setDisableUnfocus = disableUnfocus => {
+    this.disableUnfocus = disableUnfocus;
+    if (!this.disableUnfocus && this.isFocused) {
+      this.unfocus();
+    }
+  };
 
   onClick = () => {
     event.preventDefault();
@@ -255,7 +263,7 @@ class Globe {
 
   render = () => {
     TWEEN.update();
-    this.cloud.rotation.y += 0.0002;  
+    this.cloud.rotation.y += 0.0002;
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render);

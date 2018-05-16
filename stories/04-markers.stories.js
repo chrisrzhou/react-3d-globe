@@ -5,6 +5,7 @@ import App from './src/App';
 import DefaultGlobe from './src/DefaultGlobe';
 import DisableUnfocusExample from './src/DisableUnfocusExample';
 import MarkerEventsExample from './src/MarkerEventsExample';
+import UpdateMarkersExample from './src/UpdateMarkersExample';
 import {getMockData} from './src/mockData';
 
 const pointMarkers = getMockData(0xfc64ba, 'point');
@@ -35,5 +36,12 @@ storiesOf('Data and Markers', module)
       title="Disable Unfocus"
       description="Disable default unfocus click event and control it from parent component">
       <DisableUnfocusExample markers={pointMarkers} />
+    </App>
+  ))
+  .add('Update markers', () => (
+    <App
+      title="Update markers"
+      description="Update transitions when marker data is updated">
+      <UpdateMarkersExample />
     </App>
   ));

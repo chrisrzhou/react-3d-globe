@@ -34,10 +34,10 @@ export default class React3DGlobe extends React.PureComponent {
   componentDidUpdate(prevProps, prevState) {
     const {height, width} = this.state;
     if (this.props.disableUnfocus !== prevProps.disableUnfocus) {
-      this.globe.disableUnfocus = this.props.disableUnfocus;
-      if (!this.globe.disableUnfocus && this.globe.isFocused) {
-        this.globe.unfocus();
-      }
+      this.globe.setDisableUnfocus(this.props.disableUnfocus);
+    }
+    if (this.props.markers !== prevProps.markers) {
+      this.globe.setMarkers(this.props.markers);
     }
     if (this.state !== prevState) {
       this.globe.updateSize(width, height);
@@ -78,21 +78,21 @@ export default class React3DGlobe extends React.PureComponent {
       this.onMarkerClick,
       this.onMarkerMouseover,
     );
-    this.globe.addMarkers(markers);
-    this.mount.appendChild(this.globe.renderer.domElement);
+    this.globe.setMarkers(markers);
+    this.mount.appendChild(this.globe.getRendererDomElement());
     this.globe.render();
   }
 
   cleanup() {
     if (this.globe) {
       this.globe.stop();
-      this.mount.removeChild(this.globe.renderer.domElement);
+      this.mount.removeChild(this.globe.getRendererDomElement());
     }
   }
 
   componentWillUnmount() {
     this.globe.stop();
-    this.mount.removeChild(this.globe.renderer.domElement);
+    this.mount.removeChild(this.globe.getRendererDomElement());
   }
 
   render() {

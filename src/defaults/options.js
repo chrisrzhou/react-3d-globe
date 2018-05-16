@@ -24,7 +24,7 @@ export default {
     isFocused: true,
     widthSegments: 50,
     heightSegments: 50,
-    type: 'low-poly',
+    type: 'real',
   },
   space: {
     radius: 5000,
