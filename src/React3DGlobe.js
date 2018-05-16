@@ -15,6 +15,7 @@ export default class React3DGlobe extends React.PureComponent {
     options,
     globeTexture: textures.globe,
     spaceTexture: textures.space,
+    cloudTexture: textures.space,
   };
 
   state = {
@@ -58,6 +59,7 @@ export default class React3DGlobe extends React.PureComponent {
       options,
       globeTexture,
       spaceTexture,
+      cloudTexture,
       markers,
     } = this.props;
     // compute height and width with priority: props > parent > minValues
@@ -65,6 +67,7 @@ export default class React3DGlobe extends React.PureComponent {
     const textures = {
       globe: globeTexture,
       space: spaceTexture,
+      cloud: cloudTexture,
     };
     this.globe = new Globe(
       width,

@@ -44,6 +44,7 @@ class Globe {
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
+    this.cloud = this._createCloud();
     this.markers = this._createMarkers();
     this.raycaster = this._createRaycaster();
     this.mouse = this._createMouse();
@@ -55,6 +56,7 @@ class Globe {
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
+    this.scene.add(this.cloud);
   }
 
   updateSize(width, height) {
@@ -79,7 +81,7 @@ class Globe {
     const pointScale = d3
       .scaleLinear()
       .domain([minVal, maxVal])
-      .range([10, 20]);
+      .range([4, 10]);
     markers.forEach(marker => {
       const color = marker.color || 0xffffff;
       let position = latLongToVector(marker.lat, marker.long, this.radius, 2);
@@ -89,7 +91,7 @@ class Globe {
           let size = barScale(marker.value) || 10;
           let material = new THREE.MeshLambertMaterial({
             color: marker.color || 0x000000,
-            opacity: 0.6,
+            opacity: 0.9,
             transparent: true,
             wireframe: true,
           });
@@ -107,11 +109,9 @@ class Globe {
           );
           material = new THREE.MeshBasicMaterial({
             color: marker.color || 0x000000,
-            opacity: 0.6,
-            transparent: true,
           });
           mesh = new THREE.Mesh(
-            new THREE.SphereGeometry(size, size, size / 2),
+            new THREE.SphereGeometry(size, 10, 10),
             material,
           );
           break;
@@ -255,6 +255,7 @@ class Globe {
 
   render = () => {
     TWEEN.update();
+    this.cloud.rotation.y += 0.0002;  
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.frameId = window.requestAnimationFrame(this.render);
@@ -406,6 +407,21 @@ class Globe {
     const globe = new THREE.Mesh(geometry, sphereMaterial);
     globe.position.set(0, 0, 0);
     return globe;
+  }
+
+  _createCloud() {
+    const sphereMaterial = new THREE.MeshLambertMaterial({
+      map: loadTexture(this.textures.cloud),
+      transparent: true,
+    });
+    const geometry = new THREE.SphereGeometry(
+      this.radius * 1.04,
+      this.options.globe.widthSegments,
+      this.options.globe.heightSegments,
+    );
+    const cloud = new THREE.Mesh(geometry, sphereMaterial);
+    cloud.position.set(0, 0, 0);
+    return cloud;
   }
 
   _createMarkers() {
