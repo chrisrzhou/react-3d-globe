@@ -21,6 +21,7 @@ export default {
     maxPolarAngle: Math.PI * 9 / 16,
   },
   globe: {
+    isFocused: true,
     segments: 50,
     rings: 50,
     type: 'real',

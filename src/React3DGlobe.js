@@ -10,6 +10,7 @@ const MIN_WIDTH = 600;
 
 export default class React3DGlobe extends React.PureComponent {
   static defaultProps = {
+    disableUnfocus: false,
     markers: [],
     options,
     globeTexture: textures.globe,
@@ -31,9 +32,11 @@ export default class React3DGlobe extends React.PureComponent {
 
   componentDidUpdate(prevProps, prevState) {
     const {height, width} = this.state;
-    if (prevProps !== this.props) {
-      this.cleanup();
-      this.renderGlobe();
+    if (this.props.disableUnfocus !== prevProps.disableUnfocus) {
+      this.globe.disableUnfocus = this.props.disableUnfocus;
+      if (!this.globe.disableUnfocus && this.globe.isFocused) {
+        this.globe.unfocus();
+      }
     }
     if (this.state !== prevState) {
       this.globe.updateSize(width, height);
@@ -41,16 +44,22 @@ export default class React3DGlobe extends React.PureComponent {
     return;
   }
 
-  onMarkerClick = marker => {
-    this.props.onMarkerClick && this.props.onMarkerClick(marker);
+  onMarkerClick = (event, marker) => {
+    this.props.onMarkerClick && this.props.onMarkerClick(event, marker);
   };
 
-  onMarkerMouseover = marker => {
-    this.props.onMarkerMouseover && this.props.onMarkerMouseover(marker);
+  onMarkerMouseover = (event, marker) => {
+    this.props.onMarkerMouseover && this.props.onMarkerMouseover(event, marker);
   };
 
   renderGlobe() {
-    const {options, globeTexture, spaceTexture, markers} = this.props;
+    const {
+      disableUnfocus,
+      options,
+      globeTexture,
+      spaceTexture,
+      markers,
+    } = this.props;
     // compute height and width with priority: props > parent > minValues
     const {height, width} = this.state;
     const textures = {
@@ -62,6 +71,7 @@ export default class React3DGlobe extends React.PureComponent {
       height,
       options,
       textures,
+      disableUnfocus,
       this.onMarkerClick,
       this.onMarkerMouseover,
     );
@@ -85,7 +95,10 @@ export default class React3DGlobe extends React.PureComponent {
   render() {
     return (
       <div
-        style={{position: 'absolute', height: '100%', width: '100%'}}
+        style={{
+          height: '100%',
+          width: '100%',
+        }}
         ref={mount => {
           this.mount = mount;
         }}>

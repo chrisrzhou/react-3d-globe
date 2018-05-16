@@ -97,6 +97,7 @@ export default class TexturesExample extends React.Component {
           }}
         />
         <DefaultGlobe
+          key={`${selectedGlobeTexture}_${selectedSpaceTexture}`}
           globeTexture={selectedGlobeTexture}
           spaceTexture={selectedSpaceTexture}
         />

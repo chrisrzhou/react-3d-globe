@@ -19,7 +19,7 @@ storiesOf('Size', module)
   ))
   .add('Responsive Size', () => (
     <App title="Responsive Sive" description="Resizes if parent div is resized">
-      <div style={{height: '100vh', width: '100vw'}}>
+      <div style={{height: '80%', width: '80%'}}>
         <DefaultGlobe />
       </div>
     </App>

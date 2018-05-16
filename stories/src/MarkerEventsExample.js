@@ -6,18 +6,21 @@ export default class MarkerEventsExample extends React.PureComponent {
   state = {
     clickedMarker: null,
     hoveredMarker: null,
+    mouseEvent: null,
   };
 
   render() {
     const {markers} = this.props;
-    const {clickedMarker, hoveredMarker} = this.state;
+    const {clickedMarker, hoveredMarker, mouseEvent} = this.state;
     return (
-      <div style={{position: 'relative', height: 600}}>
-        <DefaultGlobe
-          markers={markers}
-          onMarkerMouseover={this.handleMarkerMouseover}
-          onMarkerClick={this.handleMarkerClick}
-        />
+      <div style={{position: 'relative', height: '100%', width: '100%'}}>
+        <div style={{height: '100%', width: '100%'}}>
+          <DefaultGlobe
+            markers={markers}
+            onMarkerMouseover={this.handleMarkerMouseover}
+            onMarkerClick={this.handleMarkerClick}
+          />
+        </div>
         <div
           style={{
             background: 'white',
@@ -38,16 +41,22 @@ export default class MarkerEventsExample extends React.PureComponent {
             <b>Hovered Marker: </b>
             <pre>{JSON.stringify(hoveredMarker, null, 2)}</pre>
           </p>
+          <p>
+            <b>Mouse Event (x, y): </b>
+            <pre>
+              {mouseEvent ? `x: ${mouseEvent.x}, y: ${mouseEvent.y}` : 'null'}
+            </pre>
+          </p>
         </div>
       </div>
     );
   }
 
-  handleMarkerMouseover = hoveredMarker => {
-    this.setState({hoveredMarker});
+  handleMarkerMouseover = (mouseEvent, hoveredMarker) => {
+    this.setState({hoveredMarker, mouseEvent});
   };
 
-  handleMarkerClick = clickedMarker => {
-    this.setState({clickedMarker});
+  handleMarkerClick = (mouseEvent, clickedMarker) => {
+    this.setState({clickedMarker, mouseEvent});
   };
 }

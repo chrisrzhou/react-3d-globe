@@ -12,6 +12,7 @@ class Globe {
     height,
     options,
     textures,
+    disableUnfocus,
     onMarkerClick,
     onMarkerMouseover,
   ) {
@@ -29,6 +30,7 @@ class Globe {
     this.mouseoverObj = null;
     this.tweenMap = {};
     this.preFocus = {x: 0, y: 0, z: 0};
+    this.disableUnfocus = disableUnfocus || false;
     this.setupScene();
   }
 
@@ -144,10 +146,11 @@ class Globe {
       };
       this.focus(to);
       const marker = this.markerMap[obj.uuid];
-      this.onMarkerClick && this.onMarkerClick(marker);
+      this.onMarkerClick && this.onMarkerClick(event, marker);
     } else {
-      if (this.isFocused) {
-        this.unFocus();
+      // we will use globe.isFocused to override internal focus state
+      if (!this.disableUnfocus && this.isFocused) {
+        this.unfocus();
       }
     }
   };
@@ -162,7 +165,7 @@ class Globe {
         return;
       }
       const marker = this.markerMap[obj.uuid];
-      this.onMarkerMouseover && this.onMarkerMouseover(marker);
+      this.onMarkerMouseover && this.onMarkerMouseover(event, marker);
       // when mouse moving from one object direct to another
       // we should reset the previous mouseover object
       if (self.mouseoverObj) {
@@ -225,7 +228,7 @@ class Globe {
       .start();
   }
 
-  unFocus() {
+  unfocus() {
     const self = this;
     self.isFocused = false;
     const cameraPosition = {
@@ -335,7 +338,10 @@ class Globe {
       minPolarAngle,
       maxPolarAngle,
     } = this.options.orbitControls;
-    const orbitControls = new OrbitControls(this.camera);
+    const orbitControls = new OrbitControls(
+      this.camera,
+      this.renderer.domElement,
+    );
     orbitControls.enablePan = enablePan;
     orbitControls.enableZoom = enableZoom;
     orbitControls.enableRotate = enableRotate;

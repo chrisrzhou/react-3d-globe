@@ -3,15 +3,17 @@ import {storiesOf} from '@storybook/react';
 
 import App from './src/App';
 import DefaultGlobe from './src/DefaultGlobe';
-import options from './../src/defaults/options';
+import {getDefaultOptions} from './../src';
+
+const defaultOptions = getDefaultOptions();
 
 storiesOf('Controls', module).add('Frozen Globe', () => (
   <App title="Freeze Globe" description="Disabling all camera controls">
     <DefaultGlobe
       options={{
-        ...options,
+        ...defaultOptions,
         orbitControls: {
-          ...options.orbitControls,
+          ...defaultOptions.orbitControls,
           autoRotate: false,
           enablePan: false,
           enableZoom: false,

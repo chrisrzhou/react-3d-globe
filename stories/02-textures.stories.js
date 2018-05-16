@@ -4,7 +4,9 @@ import {storiesOf} from '@storybook/react';
 import App from './src/App';
 import DefaultGlobe from './src/DefaultGlobe';
 import TexturesExample from './src/TexturesExample';
-import options from './../src/defaults/options';
+import {getDefaultOptions} from './../src';
+
+const defaultOptions = getDefaultOptions();
 
 storiesOf('Textures', module)
   .add('Globe and Space', () => (
@@ -15,11 +17,12 @@ storiesOf('Textures', module)
     </App>
   ))
   .add('Low Poly Texture', () => (
-    <App
-      title="Low Poly Texture"
-      description="Render globe with a polygonal style">
+    <App title="Low Poly Texture" description="Render globe in low-poly style">
       <DefaultGlobe
-        options={{...options, globe: {...options.globe, type: 'low-poly'}}}
+        options={{
+          ...defaultOptions,
+          globe: {...defaultOptions.globe, type: 'low-poly'},
+        }}
       />
     </App>
   ));

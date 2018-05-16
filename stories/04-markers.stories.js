@@ -3,11 +3,12 @@ import {storiesOf} from '@storybook/react';
 
 import App from './src/App';
 import DefaultGlobe from './src/DefaultGlobe';
+import DisableUnfocusExample from './src/DisableUnfocusExample';
 import MarkerEventsExample from './src/MarkerEventsExample';
 import {getMockData} from './src/mockData';
 
-const pointMarkers = getMockData(0xffff00, 'point');
-const barMarkers = getMockData(0xffff00, 'bar');
+const pointMarkers = getMockData(0xfc64ba, 'point');
+const barMarkers = getMockData(0xfc64ba, 'bar');
 
 storiesOf('Data and Markers', module)
   .add('Point Markers', () => (
@@ -26,6 +27,13 @@ storiesOf('Data and Markers', module)
     <App
       title="Hover and Click Events"
       description="Bind hover and click events for markers">
-      <MarkerEventsExample markers={barMarkers} />
+      <MarkerEventsExample markers={pointMarkers} />
+    </App>
+  ))
+  .add('Disable Unfocus', () => (
+    <App
+      title="Disable Unfocus"
+      description="Disable default unfocus click event and control it from parent component">
+      <DisableUnfocusExample markers={pointMarkers} />
     </App>
   ));
