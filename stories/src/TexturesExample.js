@@ -5,12 +5,15 @@ import DefaultGlobe from './DefaultGlobe';
 import spaceDefault from './textures/space-default.jpg';
 import spaceGalaxy from './textures/space-galaxy.png';
 import spacePlanet from './textures/space-planet.jpg';
+import spaceWhite from './textures/space-white.png';
 import globeCityLights from './textures/globe-city-lights.jpg';
 import globeColorful from './textures/globe-colorful.jpg';
 import globeDark from './textures/globe-dark.jpg';
 import globeDefault from './textures/globe-default.jpg';
 import globeDotted from './textures/globe-dotted.png';
 import globeGray from './textures/globe-gray.png';
+import globeBlue from './textures/globe-blue.png';
+import globeBlueInverse from './textures/globe-blue-inverse.png';
 
 const globeTextures = [
   {
@@ -37,6 +40,14 @@ const globeTextures = [
     value: globeColorful,
     label: 'colorful',
   },
+  {
+    value: globeBlue,
+    label: 'blue',
+  },
+  {
+    value: globeBlueInverse,
+    label: 'blue inverse',
+  },
 ];
 
 const spaceTextures = [
@@ -51,6 +62,10 @@ const spaceTextures = [
   {
     value: spacePlanet,
     label: 'planet',
+  },
+  {
+    value: spaceWhite,
+    label: 'white',
   },
 ];
 
