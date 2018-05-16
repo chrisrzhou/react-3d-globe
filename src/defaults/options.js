@@ -9,7 +9,7 @@ export default {
   },
   orbitControls: {
     autoRotate: true,
-    autoRotateSpeed: 0.05,
+    autoRotateSpeed: 0.02,
     rotateSpeed: 0.05,
     enableDamping: true,
     dampingFactor: 0.1,
@@ -33,5 +33,11 @@ export default {
   },
   renderer: {
     antialias: true,
+  },
+  light: {
+    frontLightIntensity: 3,
+    frontLightColor: 0xf5f5dc,
+    backLightIntensity: 10,
+    backLightColor: 0xf5f5dc,
   },
 };

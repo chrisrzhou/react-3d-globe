@@ -53,6 +53,10 @@ export default class React3DGlobe extends React.PureComponent {
     this.props.onMarkerMouseover && this.props.onMarkerMouseover(event, marker);
   };
 
+  onMarkerMouseout = event => {
+    this.props.onMarkerMouseout && this.props.onMarkerMouseout(event);
+  };
+
   renderGlobe() {
     const {
       disableUnfocus,
@@ -77,6 +81,7 @@ export default class React3DGlobe extends React.PureComponent {
       disableUnfocus,
       this.onMarkerClick,
       this.onMarkerMouseover,
+      this.onMarkerMouseout,
     );
     this.globe.setMarkers(markers);
     this.mount.appendChild(this.globe.getRendererDomElement());

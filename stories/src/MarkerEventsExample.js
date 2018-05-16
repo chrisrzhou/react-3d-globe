@@ -19,6 +19,7 @@ export default class MarkerEventsExample extends React.PureComponent {
           <DefaultGlobe
             markers={markers}
             onMarkerMouseover={this.handleMarkerMouseover}
+            onMarkerMouseout={this.handleMarkerMouseout}
             onMarkerClick={this.handleMarkerClick}
           />
         }
@@ -46,6 +47,10 @@ export default class MarkerEventsExample extends React.PureComponent {
 
   handleMarkerMouseover = (mouseEvent, hoveredMarker) => {
     this.setState({hoveredMarker, mouseEvent});
+  };
+
+  handleMarkerMouseout = mouseEvent => {
+    this.setState({hoveredMarker: null, mouseEvent});
   };
 
   handleMarkerClick = (mouseEvent, clickedMarker) => {

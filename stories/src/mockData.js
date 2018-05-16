@@ -3975,12 +3975,13 @@ export const getMockData = (color, type) => {
   return Object.keys(MOCK_DATA).map(name => {
     const d = MOCK_DATA[name];
 		return {
-      lat: d["lat"],
-      long: d["lon"],
+      id: getId(),
+      city: d.city,
       color,
       type,
       value: Math.floor(Math.random() * 100) + 1,
-      id: getId(),
+      lat: d.lat,
+      long: d.lon,
     };
   }).slice(1, 300);
 };

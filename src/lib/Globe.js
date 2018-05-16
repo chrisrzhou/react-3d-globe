@@ -15,6 +15,7 @@ class Globe {
     disableUnfocus,
     onMarkerClick,
     onMarkerMouseover,
+    onMarkerMouseout,
   ) {
     this.options = options;
     // Bind class variables this.options = options;
@@ -25,6 +26,7 @@ class Globe {
     this.height = height;
     this.onMarkerClick = onMarkerClick;
     this.onMarkerMouseover = onMarkerMouseover;
+    this.onMarkerMouseout = onMarkerMouseout;
     this.markerMap = {};
     this.isFocused = false;
     this.mouseoverObj = null;
@@ -50,9 +52,6 @@ class Globe {
     this.mouse = this._createMouse();
 
     // Add to scenes
-    this.camera.add(this.light);
-    this.camera.add(this.backlight);
-    this.backlight.position.set(-this.radius * 6, 0, -this.radius * 8);
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -118,6 +117,15 @@ class Globe {
         default:
           throw new Error('Not supported marker type.');
       }
+      new TWEEN.Tween({scale: 0})
+        .to({scale: 1}, 600)
+        .easing(TWEEN.Easing.Linear.None)
+        .on('update', function() {
+          mesh.scale.x = this.object.scale;
+          mesh.scale.y = this.object.scale;
+          mesh.scale.z = this.object.scale;
+        })
+        .start();
       mesh.material.color.setHex(color);
       mesh.position.set(position.x, position.y, position.z);
       mesh.lookAt(new THREE.Vector3(0, 0, 0));
@@ -206,6 +214,7 @@ class Globe {
         .start();
     } else {
       if (self.mouseoverObj) {
+        this.onMarkerMouseout && this.onMarkerMouseout(event);
         self.mouseoverObj.scale.x = 1;
         self.mouseoverObj.scale.y = 1;
         self.mouseoverObj.scale.z = 1;
@@ -369,14 +378,31 @@ class Globe {
   }
 
   _createLight() {
-    const light = new THREE.SpotLight(0xf5f5dc, 1.5, this.radius * 10);
+    if (!this.camera) {
+      throw new Error('Camera needs to be created before creating light.');
+    }
+    const light = new THREE.SpotLight(
+      this.options.light.frontLightColor,
+      this.options.light.frontLightIntensity,
+      this.radius * 10,
+    );
     light.target.position.set(0, 0, 0);
+    this.camera.add(light);
     return light;
   }
 
   _createBacklight() {
-    const light = new THREE.SpotLight(0xf5f5dc, 10, this.radius * 10);
+    if (!this.camera) {
+      throw new Error('Camera needs to be created before creating light.');
+    }
+    const light = new THREE.SpotLight(
+      this.options.light.backLightColor,
+      this.options.light.backLightIntensity,
+      this.radius * 10,
+    );
     light.target.position.set(0, 0, 0);
+    this.camera.add(light);
+    light.position.set(-this.radius * 6, 0, -this.radius * 8);
     return light;
   }
 
@@ -424,6 +450,7 @@ class Globe {
     const sphereMaterial = new THREE.MeshLambertMaterial({
       map: loadTexture(this.textures.cloud),
       transparent: true,
+      side: THREE.DoubleSide,
     });
     const geometry = new THREE.SphereGeometry(
       this.radius * 1.04,
