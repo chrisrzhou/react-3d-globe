@@ -3,8 +3,8 @@ import {Button, ButtonOutline, Group, Label} from 'rebass';
 
 import DefaultGlobe from './DefaultGlobe';
 import spaceDefault from './textures/space-default.jpg';
-import spaceTree from './textures/space-tree.jpg';
-import spacePlanets from './textures/space-planets.jpg';
+import spaceGalaxy from './textures/space-galaxy.png';
+import spacePlanet from './textures/space-planet.jpg';
 import globeCityLights from './textures/globe-city-lights.jpg';
 import globeColorful from './textures/globe-colorful.jpg';
 import globeDark from './textures/globe-dark.jpg';
@@ -45,12 +45,12 @@ const spaceTextures = [
     label: 'default',
   },
   {
-    value: spaceTree,
-    label: 'tree',
+    value: spaceGalaxy,
+    label: 'galaxy',
   },
   {
-    value: spacePlanets,
-    label: 'planets',
+    value: spacePlanet,
+    label: 'planet',
   },
 ];
 

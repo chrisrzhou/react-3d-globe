@@ -369,18 +369,17 @@ class Globe {
   }
 
   _createSpace() {
-    const spaceGeometry = new THREE.CubeGeometry(5000, 5000, 5000);
-    const spaceMaterials = [];
-    for (var i = 0; i < 6; i++)
-      spaceMaterials.push(
-        new THREE.MeshBasicMaterial({
-          map: loadTexture(this.textures.space),
-          side: THREE.BackSide,
-        }),
-      );
-    const spaceMaterial = new THREE.MeshFaceMaterial(spaceMaterials);
-    const space = new THREE.Mesh(spaceGeometry, spaceMaterial);
-    return space;
+    return new THREE.Mesh(
+      new THREE.SphereGeometry(
+        Math.min(this.options.space.radius, this.radius * 6),
+        this.options.space.widthSegments,
+        this.options.space.heightSegments,
+      ),
+      new THREE.MeshBasicMaterial({
+        map: loadTexture(this.textures.space),
+        side: THREE.BackSide,
+      }),
+    );
   }
 
   _createGlobe() {
@@ -397,8 +396,8 @@ class Globe {
       case 'real':
         geometry = new THREE.SphereGeometry(
           this.radius,
-          this.options.globe.segments,
-          this.options.globe.rings,
+          this.options.globe.widthSegments,
+          this.options.globe.heightSegments,
         );
         break;
       default:

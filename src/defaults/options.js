@@ -22,9 +22,14 @@ export default {
   },
   globe: {
     isFocused: true,
-    segments: 50,
-    rings: 50,
+    widthSegments: 50,
+    heightSegments: 50,
     type: 'real',
+  },
+  space: {
+    radius: 5000,
+    widthSegments: 50,
+    heightSegments: 50,
   },
   renderer: {
     antialias: true,
