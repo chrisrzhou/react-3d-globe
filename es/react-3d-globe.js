@@ -1,5 +1,5 @@
 import React from 'react';
-import { Vector3, WebGLRenderer, Scene, PerspectiveCamera, SpotLight, Mesh, SphereGeometry, MeshBasicMaterial, BackSide, MeshLambertMaterial, DodecahedronGeometry, Group, Raycaster, Vector2, CubeGeometry, TextureLoader } from 'three';
+import { Vector3, WebGLRenderer, Scene, PerspectiveCamera, SpotLight, Mesh, SphereGeometry, MeshBasicMaterial, BackSide, MeshLambertMaterial, DodecahedronGeometry, DoubleSide, Group, Raycaster, Vector2, CubeGeometry, TextureLoader } from 'three';
 import { min, max, scaleLinear } from 'd3';
 import OrbitControls from 'three-orbitcontrols';
 import { Tween, Easing, update } from 'es6-tween';
@@ -104,13 +104,13 @@ var latLongToVector = function latLongToVector(lat, lon, radius) {
 };
 
 var Globe = function () {
-  function Globe(width, height, options, textures, disableUnfocus, onMarkerClick, onMarkerMouseover) {
+  function Globe(width, height, options, textures, disableUnfocus, onMarkerClick, onMarkerMouseover, onMarkerMouseout) {
     classCallCheck(this, Globe);
 
     _initialiseProps.call(this);
 
-    // Bind class variables
     this.options = options;
+    // Bind class variables this.options = options;
     this.textures = textures;
     this.aspect = width / height;
     this.radius = Math.min(width, height);
@@ -118,6 +118,7 @@ var Globe = function () {
     this.height = height;
     this.onMarkerClick = onMarkerClick;
     this.onMarkerMouseover = onMarkerMouseover;
+    this.onMarkerMouseout = onMarkerMouseout;
     this.markerMap = {};
     this.isFocused = false;
     this.mouseoverObj = null;
@@ -143,9 +144,6 @@ var Globe = function () {
     this.mouse = this._createMouse();
 
     // Add to scenes
-    this.camera.add(this.light);
-    this.camera.add(this.backlight);
-    this.backlight.position.set(-this.radius * 6, 0, -this.radius * 8);
     this.scene.add(this.camera);
     this.scene.add(this.space);
     this.scene.add(this.globe);
@@ -286,14 +284,23 @@ var Globe = function () {
   };
 
   Globe.prototype._createLight = function _createLight() {
-    var light = new SpotLight(0xf5f5dc, 1.5, this.radius * 10);
+    if (!this.camera) {
+      throw new Error('Camera needs to be created before creating light.');
+    }
+    var light = new SpotLight(this.options.light.frontLightColor, this.options.light.frontLightIntensity, this.radius * 10);
     light.target.position.set(0, 0, 0);
+    this.camera.add(light);
     return light;
   };
 
   Globe.prototype._createBacklight = function _createBacklight() {
-    var light = new SpotLight(0xf5f5dc, 10, this.radius * 10);
+    if (!this.camera) {
+      throw new Error('Camera needs to be created before creating light.');
+    }
+    var light = new SpotLight(this.options.light.backLightColor, this.options.light.backLightIntensity, this.radius * 10);
     light.target.position.set(0, 0, 0);
+    this.camera.add(light);
+    light.position.set(-this.radius * 6, 0, -this.radius * 8);
     return light;
   };
 
@@ -329,7 +336,8 @@ var Globe = function () {
   Globe.prototype._createCloud = function _createCloud() {
     var sphereMaterial = new MeshLambertMaterial({
       map: loadTexture(this.textures.cloud),
-      transparent: true
+      transparent: true,
+      side: DoubleSide
     });
     var geometry = new SphereGeometry(this.radius * 1.04, this.options.globe.widthSegments, this.options.globe.heightSegments);
     var cloud = new Mesh(geometry, sphereMaterial);
@@ -367,6 +375,9 @@ var _initialiseProps = function _initialiseProps() {
     var barScale = scaleLinear().domain([minVal, maxVal]).range(range);
     var pointScale = scaleLinear().domain([minVal, maxVal]).range([4, 10]);
     markers.forEach(function (marker) {
+      if (_this.options.globe.type === 'low-poly') {
+        marker.long = (marker.long + 180) % 180;
+      }
       var color = marker.color || 0xffffff;
       var position = latLongToVector(marker.lat, marker.long, _this.radius, 2);
       var mesh = null;
@@ -392,6 +403,11 @@ var _initialiseProps = function _initialiseProps() {
         default:
           throw new Error('Not supported marker type.');
       }
+      new Tween({ scale: 0 }).to({ scale: 1 }, 600).easing(Easing.Linear.None).on('update', function () {
+        mesh.scale.x = this.object.scale;
+        mesh.scale.y = this.object.scale;
+        mesh.scale.z = this.object.scale;
+      }).start();
       mesh.material.color.setHex(color);
       mesh.position.set(position.x, position.y, position.z);
       mesh.lookAt(new Vector3(0, 0, 0));
@@ -477,6 +493,7 @@ var _initialiseProps = function _initialiseProps() {
       }).start();
     } else {
       if (self.mouseoverObj) {
+        _this.onMarkerMouseout && _this.onMarkerMouseout(event);
         self.mouseoverObj.scale.x = 1;
         self.mouseoverObj.scale.y = 1;
         self.mouseoverObj.scale.z = 1;
@@ -505,7 +522,7 @@ var options = {
   },
   orbitControls: {
     autoRotate: true,
-    autoRotateSpeed: 0.05,
+    autoRotateSpeed: 0.02,
     rotateSpeed: 0.05,
     enableDamping: true,
     dampingFactor: 0.1,
@@ -529,6 +546,12 @@ var options = {
   },
   renderer: {
     antialias: true
+  },
+  light: {
+    frontLightIntensity: 3,
+    frontLightColor: 0xf5f5dc,
+    backLightIntensity: 10,
+    backLightColor: 0xf5f5dc
   }
 };
 
@@ -559,6 +582,8 @@ var React3DGlobe = function (_React$PureComponent) {
       _this.props.onMarkerClick && _this.props.onMarkerClick(event, marker);
     }, _this.onMarkerMouseover = function (event, marker) {
       _this.props.onMarkerMouseover && _this.props.onMarkerMouseover(event, marker);
+    }, _this.onMarkerMouseout = function (event) {
+      _this.props.onMarkerMouseout && _this.props.onMarkerMouseout(event);
     }, _this.onResize = function () {
       // if neither width nor height is provided via props
       if (!_this.props.width) {
@@ -618,7 +643,7 @@ var React3DGlobe = function (_React$PureComponent) {
       space: spaceTexture,
       cloud: cloudTexture
     };
-    this.globe = new Globe(width, height, options$$1, textures$$1, disableUnfocus, this.onMarkerClick, this.onMarkerMouseover);
+    this.globe = new Globe(width, height, options$$1, textures$$1, disableUnfocus, this.onMarkerClick, this.onMarkerMouseover, this.onMarkerMouseout);
     this.globe.setMarkers(markers);
     this.mount.appendChild(this.globe.getRendererDomElement());
     this.globe.render();

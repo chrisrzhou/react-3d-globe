@@ -2,14 +2,14 @@ import React from 'react';
 import {Button, ButtonOutline, Group, Label} from 'rebass';
 
 import DefaultGlobe from './DefaultGlobe';
-import spaceDefault from './textures/space-default.jpg';
-import spaceGalaxy from './textures/space-galaxy.png';
+import spaceDefault from './../../src/textures/space.png';
+import spaceGradient from './textures/space-gradient.png';
 import spacePlanet from './textures/space-planet.jpg';
 import spaceWhite from './textures/space-white.png';
 import globeCityLights from './textures/globe-city-lights.jpg';
 import globeColorful from './textures/globe-colorful.jpg';
 import globeDark from './textures/globe-dark.jpg';
-import globeDefault from './textures/globe-default.jpg';
+import globeDefault from './../../src/textures/globe.jpg';
 import globeDotted from './textures/globe-dotted.png';
 import globeGray from './textures/globe-gray.png';
 import globeBlue from './textures/globe-blue.png';
@@ -56,8 +56,8 @@ const spaceTextures = [
     label: 'default',
   },
   {
-    value: spaceGalaxy,
-    label: 'galaxy',
+    value: spaceGradient,
+    label: 'gradient',
   },
   {
     value: spacePlanet,
