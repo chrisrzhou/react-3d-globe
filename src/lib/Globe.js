@@ -66,16 +66,7 @@ class Globe {
 
   setMarkers = markers => {
     this.markers.children = []; // clear before adding
-    const minVal = d3.min(markers, marker => marker.value || 2);
-    const maxVal = d3.max(markers, marker => marker.value || 2);
-    const barScale = d3
-      .scaleLinear()
-      .domain([minVal, maxVal])
-      .range([2, 1000]);
-    const pointScale = d3
-      .scaleLinear()
-      .domain([minVal, maxVal])
-      .range([2, 10]);
+    this.markerMap = {};
     markers.forEach(marker => {
       if (this.options.globe.type === 'low-poly') {
         marker.long = (marker.long + 180) % 180;
@@ -85,9 +76,9 @@ class Globe {
       let mesh = null;
       switch (marker.type) {
         case 'bar':
-          let size = barScale(marker.value) || 10;
+          let size = marker.size || 100;
           let material = new THREE.MeshLambertMaterial({
-            color: marker.color || 0x000000,
+            color,
             opacity: 0.9,
             transparent: true,
             wireframe: true,
@@ -98,21 +89,19 @@ class Globe {
           this._blink(mesh, {scale: 0.1}, {scale: 1}, false);
           break;
         case 'point':
-          size = pointScale(marker.value) || 10;
+          size = marker.size || 5;
           position = latLongToVector(
             marker.lat,
             marker.long,
             this.radius,
             size,
           );
-          material = new THREE.MeshBasicMaterial({
-            color: marker.color || 0x000000,
-          });
+          material = new THREE.MeshBasicMaterial({color});
           mesh = new THREE.Mesh(
             new THREE.SphereGeometry(size, 10, 10),
             material,
           );
-          this._blink(mesh, {scale: 0.5}, {scale: 1}, true);
+          this._blink(mesh, {scale: 0.5}, {scale: 1}, true, {scale: 2}, true);
           break;
         default:
           throw new Error('Not supported marker type.');
@@ -126,12 +115,13 @@ class Globe {
     this.scene.add(this.markers);
   };
  
-  _blink(markerMesh, from, to, recursive) {
+  _blink(markerMesh, from, to, recursive, initial, isInitialBlink) {
     const self = this;
+    const tweenFrom = isInitialBlink ? initial : from;
     const _from = {...from};
     const _to = {...to};
-    const duration = Math.floor(Math.random() * 500) + 500;
-    new TWEEN.Tween(from)
+    const duration = Math.floor(Math.random() * 1000) + 500;
+    new TWEEN.Tween(tweenFrom)
       .to(to, duration)
       .easing(TWEEN.Easing.Linear.None)
       .on('update', function() {
@@ -140,8 +130,8 @@ class Globe {
         markerMesh.scale.z = this.object.scale;
       })
       .on('complete', function() {
-        if (recursive) {
-          self._blink(markerMesh, _to, _from, recursive);
+        if (recursive && markerMesh.uuid in self.markerMap) {
+          self._blink(markerMesh, _to, _from, recursive, initial, false);
         }
       })
       .start();

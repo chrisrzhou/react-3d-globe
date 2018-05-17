@@ -1,5 +1,5 @@
 import React from 'react';
-import { Vector3, WebGLRenderer, Scene, PerspectiveCamera, SpotLight, Mesh, SphereGeometry, MeshBasicMaterial, BackSide, MeshLambertMaterial, DodecahedronGeometry, DoubleSide, Group, Raycaster, Vector2, CubeGeometry, TextureLoader } from 'three';
+import { Vector3, WebGLRenderer, Scene, PerspectiveCamera, AmbientLight, SpotLight, Mesh, SphereGeometry, MeshBasicMaterial, BackSide, MeshLambertMaterial, DodecahedronGeometry, DoubleSide, Group, Raycaster, Vector2, CubeGeometry, TextureLoader } from 'three';
 import { min, max, scaleLinear } from 'd3';
 import OrbitControls from 'three-orbitcontrols';
 import { Tween, Easing, update } from 'es6-tween';
@@ -8,6 +8,20 @@ var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
   }
+};
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
 };
 
 var inherits = function (subClass, superClass) {
@@ -133,8 +147,7 @@ var Globe = function () {
     this.renderer = this._createRenderer();
     this.scene = this._createScene();
     this.camera = this._createCamera();
-    this.light = this._createLight();
-    this.backlight = this._createBacklight();
+    this._createLight();
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
@@ -155,6 +168,22 @@ var Globe = function () {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.render(this.scene, this.camera);
+  };
+
+  Globe.prototype._blink = function _blink(markerMesh, from, to, recursive) {
+    var self = this;
+    var _from = _extends({}, from);
+    var _to = _extends({}, to);
+    var duration = Math.floor(Math.random() * 500) + 500;
+    new Tween(from).to(to, duration).easing(Easing.Linear.None).on('update', function () {
+      markerMesh.scale.x = this.object.scale;
+      markerMesh.scale.y = this.object.scale;
+      markerMesh.scale.z = this.object.scale;
+    }).on('complete', function () {
+      if (recursive) {
+        self._blink(markerMesh, _to, _from, recursive);
+      }
+    }).start();
   };
 
   Globe.prototype.focus = function focus(to) {
@@ -287,21 +316,19 @@ var Globe = function () {
     if (!this.camera) {
       throw new Error('Camera needs to be created before creating light.');
     }
-    var light = new SpotLight(this.options.light.frontLightColor, this.options.light.frontLightIntensity, this.radius * 10);
-    light.target.position.set(0, 0, 0);
-    this.camera.add(light);
-    return light;
-  };
 
-  Globe.prototype._createBacklight = function _createBacklight() {
-    if (!this.camera) {
-      throw new Error('Camera needs to be created before creating light.');
-    }
-    var light = new SpotLight(this.options.light.backLightColor, this.options.light.backLightIntensity, this.radius * 10);
-    light.target.position.set(0, 0, 0);
-    this.camera.add(light);
-    light.position.set(-this.radius * 6, 0, -this.radius * 8);
-    return light;
+    // scenelight
+    var sceneLight = new AmbientLight(this.options.light.sceneLightColor, this.options.light.sceneLightIntensity);
+    this.scene.add(sceneLight);
+    // front light
+    var frontLight = new SpotLight(this.options.light.frontLightColor, this.options.light.frontLightIntensity, this.radius * 10);
+    frontLight.target.position.set(0, 0, 0);
+    this.camera.add(frontLight);
+    // back light
+    var backLight = new SpotLight(this.options.light.backLightColor, this.options.light.backLightIntensity, this.radius * 10);
+    backLight.target.position.set(0, 0, 0);
+    this.camera.add(backLight);
+    backLight.position.set(-this.radius * 6, 0, -this.radius * 8);
   };
 
   Globe.prototype._createSpace = function _createSpace() {
@@ -366,14 +393,13 @@ var _initialiseProps = function _initialiseProps() {
   this.setMarkers = function (markers) {
     _this.markers.children = []; // clear before adding
     var minVal = min(markers, function (marker) {
-      return marker.value || 10;
+      return marker.value || 2;
     });
     var maxVal = max(markers, function (marker) {
-      return marker.value || 10;
+      return marker.value || 2;
     });
-    var range = minVal != maxVal ? [50, 500] : [50, 50];
-    var barScale = scaleLinear().domain([minVal, maxVal]).range(range);
-    var pointScale = scaleLinear().domain([minVal, maxVal]).range([4, 10]);
+    var barScale = scaleLinear().domain([minVal, maxVal]).range([2, 1000]);
+    var pointScale = scaleLinear().domain([minVal, maxVal]).range([2, 10]);
     markers.forEach(function (marker) {
       if (_this.options.globe.type === 'low-poly') {
         marker.long = (marker.long + 180) % 180;
@@ -391,6 +417,7 @@ var _initialiseProps = function _initialiseProps() {
             wireframe: true
           });
           mesh = new Mesh(new CubeGeometry(7, 7, size, 1, 1, 1, material));
+          _this._blink(mesh, { scale: 0.1 }, { scale: 1 }, false);
           break;
         case 'point':
           size = pointScale(marker.value) || 10;
@@ -399,15 +426,11 @@ var _initialiseProps = function _initialiseProps() {
             color: marker.color || 0x000000
           });
           mesh = new Mesh(new SphereGeometry(size, 10, 10), material);
+          _this._blink(mesh, { scale: 0.5 }, { scale: 1 }, true);
           break;
         default:
           throw new Error('Not supported marker type.');
       }
-      new Tween({ scale: 0 }).to({ scale: 1 }, 600).easing(Easing.Linear.None).on('update', function () {
-        mesh.scale.x = this.object.scale;
-        mesh.scale.y = this.object.scale;
-        mesh.scale.z = this.object.scale;
-      }).start();
       mesh.material.color.setHex(color);
       mesh.position.set(position.x, position.y, position.z);
       mesh.lookAt(new Vector3(0, 0, 0));
@@ -442,9 +465,9 @@ var _initialiseProps = function _initialiseProps() {
         };
       }
       var to = {
-        x: obj.position.x * (radiusScale - 2),
-        y: obj.position.y * (radiusScale - 2),
-        z: obj.position.z * (radiusScale - 2)
+        x: obj.position.x * (radiusScale - 1),
+        y: obj.position.y * (radiusScale - 1),
+        z: obj.position.z * (radiusScale - 1)
       };
       _this.focus(to);
       var marker = _this.markerMap[obj.uuid];
@@ -517,7 +540,7 @@ var options = {
     near: 1,
     positionX: 0,
     positionY: 0,
-    radiusScale: 4,
+    radiusScale: 3,
     viewAngle: 45
   },
   orbitControls: {
@@ -548,10 +571,12 @@ var options = {
     antialias: true
   },
   light: {
-    frontLightIntensity: 3,
+    sceneLightColor: 0xf5f5dc,
+    sceneLightIntensity: 0.7,
     frontLightColor: 0xf5f5dc,
-    backLightIntensity: 10,
-    backLightColor: 0xf5f5dc
+    frontLightIntensity: 2,
+    backLightColor: 0xf5f5dc,
+    backLightIntensity: 10
   }
 };
 
