@@ -35,9 +35,11 @@ export default {
     antialias: true,
   },
   light: {
-    frontLightIntensity: 3,
+    sceneLightColor: 0xf5f5dc,
+    sceneLightIntensity: 0.5,
     frontLightColor: 0xf5f5dc,
-    backLightIntensity: 10,
+    frontLightIntensity: 2,
     backLightColor: 0xf5f5dc,
+    backLightIntensity: 10,
   },
 };

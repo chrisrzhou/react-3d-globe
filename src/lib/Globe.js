@@ -41,8 +41,7 @@ class Globe {
     this.renderer = this._createRenderer();
     this.scene = this._createScene();
     this.camera = this._createCamera();
-    this.light = this._createLight();
-    this.backlight = this._createBacklight();
+    this._createLight();
     this.controls = this._createOrbitControls();
     this.space = this._createSpace();
     this.globe = this._createGlobe();
@@ -381,29 +380,30 @@ class Globe {
     if (!this.camera) {
       throw new Error('Camera needs to be created before creating light.');
     }
-    const light = new THREE.SpotLight(
+
+    // scenelight
+    const sceneLight = new THREE.AmbientLight(
+      this.options.light.sceneLightColor,
+      this.options.light.sceneLightIntensity,
+    );
+    this.scene.add(sceneLight);
+    // front light
+    const frontLight = new THREE.SpotLight(
       this.options.light.frontLightColor,
       this.options.light.frontLightIntensity,
       this.radius * 10,
     );
-    light.target.position.set(0, 0, 0);
-    this.camera.add(light);
-    return light;
-  }
-
-  _createBacklight() {
-    if (!this.camera) {
-      throw new Error('Camera needs to be created before creating light.');
-    }
-    const light = new THREE.SpotLight(
+    frontLight.target.position.set(0, 0, 0);
+    this.camera.add(frontLight);
+    // back light
+    const backLight = new THREE.SpotLight(
       this.options.light.backLightColor,
       this.options.light.backLightIntensity,
       this.radius * 10,
     );
-    light.target.position.set(0, 0, 0);
-    this.camera.add(light);
-    light.position.set(-this.radius * 6, 0, -this.radius * 8);
-    return light;
+    backLight.target.position.set(0, 0, 0);
+    this.camera.add(backLight);
+    backLight.position.set(-this.radius * 6, 0, -this.radius * 8);
   }
 
   _createSpace() {
