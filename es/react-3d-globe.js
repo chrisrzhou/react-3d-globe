@@ -1,6 +1,6 @@
 import React from 'react';
 import { Vector3, WebGLRenderer, Scene, PerspectiveCamera, AmbientLight, SpotLight, Mesh, SphereGeometry, MeshBasicMaterial, BackSide, MeshLambertMaterial, DodecahedronGeometry, DoubleSide, Group, Raycaster, Vector2, CubeGeometry, TextureLoader } from 'three';
-import { min, max, scaleLinear } from 'd3';
+import 'd3';
 import OrbitControls from 'three-orbitcontrols';
 import { Tween, Easing, update } from 'es6-tween';
 
@@ -170,18 +170,19 @@ var Globe = function () {
     this.renderer.render(this.scene, this.camera);
   };
 
-  Globe.prototype._blink = function _blink(markerMesh, from, to, recursive) {
+  Globe.prototype._blink = function _blink(markerMesh, from, to, recursive, initial, isInitialBlink) {
     var self = this;
+    var tweenFrom = isInitialBlink ? initial : from;
     var _from = _extends({}, from);
     var _to = _extends({}, to);
-    var duration = Math.floor(Math.random() * 500) + 500;
-    new Tween(from).to(to, duration).easing(Easing.Linear.None).on('update', function () {
+    var duration = Math.floor(Math.random() * 1000) + 500;
+    new Tween(tweenFrom).to(to, duration).easing(Easing.Linear.None).on('update', function () {
       markerMesh.scale.x = this.object.scale;
       markerMesh.scale.y = this.object.scale;
       markerMesh.scale.z = this.object.scale;
     }).on('complete', function () {
-      if (recursive) {
-        self._blink(markerMesh, _to, _from, recursive);
+      if (recursive && markerMesh.uuid in self.markerMap) {
+        self._blink(markerMesh, _to, _from, recursive, initial, false);
       }
     }).start();
   };
@@ -392,14 +393,7 @@ var _initialiseProps = function _initialiseProps() {
 
   this.setMarkers = function (markers) {
     _this.markers.children = []; // clear before adding
-    var minVal = min(markers, function (marker) {
-      return marker.value || 2;
-    });
-    var maxVal = max(markers, function (marker) {
-      return marker.value || 2;
-    });
-    var barScale = scaleLinear().domain([minVal, maxVal]).range([2, 1000]);
-    var pointScale = scaleLinear().domain([minVal, maxVal]).range([2, 10]);
+    _this.markerMap = {};
     markers.forEach(function (marker) {
       if (_this.options.globe.type === 'low-poly') {
         marker.long = (marker.long + 180) % 180;
@@ -409,9 +403,9 @@ var _initialiseProps = function _initialiseProps() {
       var mesh = null;
       switch (marker.type) {
         case 'bar':
-          var size = barScale(marker.value) || 10;
+          var size = marker.size || 100;
           var material = new MeshLambertMaterial({
-            color: marker.color || 0x000000,
+            color: color,
             opacity: 0.9,
             transparent: true,
             wireframe: true
@@ -420,13 +414,11 @@ var _initialiseProps = function _initialiseProps() {
           _this._blink(mesh, { scale: 0.1 }, { scale: 1 }, false);
           break;
         case 'point':
-          size = pointScale(marker.value) || 10;
+          size = marker.size || 5;
           position = latLongToVector(marker.lat, marker.long, _this.radius, size);
-          material = new MeshBasicMaterial({
-            color: marker.color || 0x000000
-          });
+          material = new MeshBasicMaterial({ color: color });
           mesh = new Mesh(new SphereGeometry(size, 10, 10), material);
-          _this._blink(mesh, { scale: 0.5 }, { scale: 1 }, true);
+          _this._blink(mesh, { scale: 0.5 }, { scale: 1 }, true, { scale: 2 }, true);
           break;
         default:
           throw new Error('Not supported marker type.');
