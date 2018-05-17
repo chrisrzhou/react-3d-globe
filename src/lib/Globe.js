@@ -66,17 +66,16 @@ class Globe {
 
   setMarkers = markers => {
     this.markers.children = []; // clear before adding
-    const minVal = d3.min(markers, marker => marker.value || 10);
-    const maxVal = d3.max(markers, marker => marker.value || 10);
-    const range = minVal != maxVal ? [50, 500] : [50, 50];
+    const minVal = d3.min(markers, marker => marker.value || 2);
+    const maxVal = d3.max(markers, marker => marker.value || 2);
     const barScale = d3
       .scaleLinear()
       .domain([minVal, maxVal])
-      .range(range);
+      .range([2, 1000]);
     const pointScale = d3
       .scaleLinear()
       .domain([minVal, maxVal])
-      .range([4, 10]);
+      .range([2, 10]);
     markers.forEach(marker => {
       if (this.options.globe.type === 'low-poly') {
         marker.long = (marker.long + 180) % 180;
@@ -96,6 +95,7 @@ class Globe {
           mesh = new THREE.Mesh(
             new THREE.CubeGeometry(7, 7, size, 1, 1, 1, material),
           );
+          this._blink(mesh, {scale: 0.1}, {scale: 1}, false);
           break;
         case 'point':
           size = pointScale(marker.value) || 10;
@@ -112,19 +112,11 @@ class Globe {
             new THREE.SphereGeometry(size, 10, 10),
             material,
           );
+          this._blink(mesh, {scale: 0.5}, {scale: 1}, true);
           break;
         default:
           throw new Error('Not supported marker type.');
       }
-      new TWEEN.Tween({scale: 0})
-        .to({scale: 1}, 600)
-        .easing(TWEEN.Easing.Linear.None)
-        .on('update', function() {
-          mesh.scale.x = this.object.scale;
-          mesh.scale.y = this.object.scale;
-          mesh.scale.z = this.object.scale;
-        })
-        .start();
       mesh.material.color.setHex(color);
       mesh.position.set(position.x, position.y, position.z);
       mesh.lookAt(new THREE.Vector3(0, 0, 0));
@@ -133,6 +125,27 @@ class Globe {
     });
     this.scene.add(this.markers);
   };
+ 
+  _blink(markerMesh, from, to, recursive) {
+    const self = this;
+    const _from = {...from};
+    const _to = {...to};
+    const duration = Math.floor(Math.random() * 500) + 500;
+    new TWEEN.Tween(from)
+      .to(to, duration)
+      .easing(TWEEN.Easing.Linear.None)
+      .on('update', function() {
+        markerMesh.scale.x = this.object.scale;
+        markerMesh.scale.y = this.object.scale;
+        markerMesh.scale.z = this.object.scale;
+      })
+      .on('complete', function() {
+        if (recursive) {
+          self._blink(markerMesh, _to, _from, recursive);
+        }
+      })
+      .start();
+  }
 
   getRendererDomElement = () => {
     return this.renderer.domElement;
@@ -158,9 +171,9 @@ class Globe {
         };
       }
       const to = {
-        x: obj.position.x * (radiusScale - 2),
-        y: obj.position.y * (radiusScale - 2),
-        z: obj.position.z * (radiusScale - 2),
+        x: obj.position.x * (radiusScale - 1),
+        y: obj.position.y * (radiusScale - 1),
+        z: obj.position.z * (radiusScale - 1),
       };
       this.focus(to);
       const marker = this.markerMap[obj.uuid];

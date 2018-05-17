@@ -3979,9 +3979,9 @@ export const getMockData = (color, type) => {
       city: d.city,
       color,
       type,
-      value: Math.floor(Math.random() * 100) + 1,
+      value: Math.floor(Math.random() * 20) + 1,
       lat: d.lat,
       long: d.lon,
     };
-  }).slice(1, 300);
+  });
 };

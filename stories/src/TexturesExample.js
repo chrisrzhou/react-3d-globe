@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, ButtonOutline, Group, Label} from 'rebass';
 
 import DefaultGlobe from './DefaultGlobe';
+import {getDefaultOptions} from './../../src';
 import spaceDefault from './../../src/textures/space.png';
 import spaceGradient from './textures/space-gradient.png';
 import spacePlanet from './textures/space-planet.jpg';
@@ -14,6 +15,8 @@ import globeDotted from './textures/globe-dotted.png';
 import globeGray from './textures/globe-gray.png';
 import globeBlue from './textures/globe-blue.png';
 import globeBlueInverse from './textures/globe-blue-inverse.png';
+import {getMockData} from './mockData';
+const pointMarkers = getMockData(0x8C72CB, 'point');
 
 const globeTextures = [
   {
@@ -89,10 +92,19 @@ export default class TexturesExample extends React.Component {
   state = {
     selectedGlobeTexture: globeTextures[0].value,
     selectedSpaceTexture: spaceTextures[0].value,
+    globeType: 'low-poly',
   };
 
   render() {
-    const {selectedSpaceTexture, selectedGlobeTexture} = this.state;
+    const {selectedSpaceTexture, selectedGlobeTexture, globeType} = this.state;
+    const defaultOptions = getDefaultOptions();
+    const options = {
+      ...defaultOptions,
+      globe: {
+        ...defaultOptions.globe,
+        type: globeType,
+      },
+    };
     return (
       <div>
         <ButtonGroup
@@ -111,10 +123,20 @@ export default class TexturesExample extends React.Component {
             this.setState({selectedSpaceTexture: value});
           }}
         />
+        <ButtonGroup
+          label="Background Texture"
+          options={[{value: 'low-poly', label: 'low poly'}, {value: 'real', label: 'real'}]}
+          selectedValue={'low-poly'}
+          onButtonClick={value => {
+            this.setState({globeType: value});
+          }}
+        />
         <DefaultGlobe
-          key={`${selectedGlobeTexture}_${selectedSpaceTexture}`}
+          key={`${selectedGlobeTexture}_${selectedSpaceTexture}_${globeType}`}
+          markers={pointMarkers}
           globeTexture={selectedGlobeTexture}
           spaceTexture={selectedSpaceTexture}
+          options={options}
         />
       </div>
     );

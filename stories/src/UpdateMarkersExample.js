@@ -5,7 +5,7 @@ import DefaultGlobe from './DefaultGlobe';
 import GlobeOverlay from './GlobeOverlay';
 import {getMockData} from './../src/mockData';
 
-const barMarkers = getMockData(0xfc64ba, 'bar');
+const barMarkers = getMockData(0xfc64ba, 'point');
 
 const getRandomValue = () => {
   // favor lower values

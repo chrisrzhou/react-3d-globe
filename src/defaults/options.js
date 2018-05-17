@@ -4,7 +4,7 @@ export default {
     near: 1,
     positionX: 0,
     positionY: 0,
-    radiusScale: 4,
+    radiusScale: 3,
     viewAngle: 45,
   },
   orbitControls: {
@@ -36,7 +36,7 @@ export default {
   },
   light: {
     sceneLightColor: 0xf5f5dc,
-    sceneLightIntensity: 0.5,
+    sceneLightIntensity: 0.7,
     frontLightColor: 0xf5f5dc,
     frontLightIntensity: 2,
     backLightColor: 0xf5f5dc,

@@ -7,6 +7,8 @@ import TexturesExample from './src/TexturesExample';
 import {getDefaultOptions} from './../src';
 
 const defaultOptions = getDefaultOptions();
+import {getMockData} from './src/mockData';
+const pointMarkers = getMockData(0x8C72CB, 'point');
 
 storiesOf('Textures', module)
   .add('Globe and Space', () => (
@@ -19,6 +21,7 @@ storiesOf('Textures', module)
   .add('Low Poly Texture', () => (
     <App title="Low Poly Texture" description="Render globe in low-poly style">
       <DefaultGlobe
+        markers={pointMarkers}
         options={{
           ...defaultOptions,
           globe: {...defaultOptions.globe, type: 'low-poly'},
