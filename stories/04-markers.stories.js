@@ -8,8 +8,8 @@ import MarkerEventsExample from './src/MarkerEventsExample';
 import UpdateMarkersExample from './src/UpdateMarkersExample';
 import {getMockData} from './src/mockData';
 
-const pointMarkers = getMockData(0x8C72CB, 'point');
-const barMarkers = getMockData(0x8C72CB, 'bar');
+const pointMarkers = getMockData(0x8c72cb, 'point');
+const barMarkers = getMockData(0x8c72cb, 'bar');
 
 storiesOf('Data and Markers', module)
   .add('Point Markers', () => (

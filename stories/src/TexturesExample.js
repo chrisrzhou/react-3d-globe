@@ -15,8 +15,6 @@ import globeDotted from './textures/globe-dotted.png';
 import globeGray from './textures/globe-gray.png';
 import globeBlue from './textures/globe-blue.png';
 import globeBlueInverse from './textures/globe-blue-inverse.png';
-import {getMockData} from './mockData';
-const pointMarkers = getMockData(0x8C72CB, 'point');
 
 const globeTextures = [
   {
@@ -92,7 +90,7 @@ export default class TexturesExample extends React.Component {
   state = {
     selectedGlobeTexture: globeTextures[0].value,
     selectedSpaceTexture: spaceTextures[0].value,
-    globeType: 'low-poly',
+    globeType: 'real',
   };
 
   render() {
@@ -125,15 +123,17 @@ export default class TexturesExample extends React.Component {
         />
         <ButtonGroup
           label="Background Texture"
-          options={[{value: 'low-poly', label: 'low poly'}, {value: 'real', label: 'real'}]}
-          selectedValue={'low-poly'}
+          options={[
+            {value: 'real', label: 'real'},
+            {value: 'low-poly', label: 'low poly'},
+          ]}
+          selectedValue={globeType}
           onButtonClick={value => {
             this.setState({globeType: value});
           }}
         />
         <DefaultGlobe
           key={`${selectedGlobeTexture}_${selectedSpaceTexture}_${globeType}`}
-          markers={pointMarkers}
           globeTexture={selectedGlobeTexture}
           spaceTexture={selectedSpaceTexture}
           options={options}

@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as d3 from 'd3';
 import OrbitControls from 'three-orbitcontrols';
 import * as TWEEN from 'es6-tween';
 
@@ -114,7 +113,7 @@ class Globe {
     });
     this.scene.add(this.markers);
   };
- 
+
   _blink(markerMesh, from, to, recursive, initial, isInitialBlink) {
     const self = this;
     const tweenFrom = isInitialBlink ? initial : from;

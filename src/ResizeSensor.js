@@ -4,7 +4,6 @@ export default class ResizeSensor extends React.PureComponent {
   render() {
     return (
       <iframe
-        ref="sensorIframe"
         ref={ref => {
           this.ref = ref;
         }}

@@ -27,18 +27,18 @@ export default class MarkerEventsExample extends React.PureComponent {
           <div>
             <p>
               <b>Clicked Marker: </b>
-              <pre>{JSON.stringify(clickedMarker, null, 2)}</pre>
             </p>
+            <pre>{JSON.stringify(clickedMarker, null, 2)}</pre>
             <p>
               <b>Hovered Marker: </b>
-              <pre>{JSON.stringify(hoveredMarker, null, 2)}</pre>
             </p>
+            <pre>{JSON.stringify(hoveredMarker, null, 2)}</pre>
             <p>
               <b>Mouse Event (x, y): </b>
-              <pre>
-                {mouseEvent ? `x: ${mouseEvent.x}, y: ${mouseEvent.y}` : 'null'}
-              </pre>
             </p>
+            <pre>
+              {mouseEvent ? `x: ${mouseEvent.x}, y: ${mouseEvent.y}` : 'null'}
+            </pre>
           </div>
         }
       />

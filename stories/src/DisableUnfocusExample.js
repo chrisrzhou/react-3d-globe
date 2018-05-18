@@ -1,5 +1,5 @@
 import React from 'react';
-import {Flex, Button, Text} from 'rebass';
+import {Flex, Button} from 'rebass';
 
 import DefaultGlobe from './DefaultGlobe';
 

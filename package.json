@@ -36,7 +36,6 @@
     "deploy-storybook": "storybook-to-ghpages"
   },
   "dependencies": {
-    "d3": "^5.0.0",
     "es6-tween": "^5.2.2",
     "react": "16.2.0",
     "three": "^0.92.0",
